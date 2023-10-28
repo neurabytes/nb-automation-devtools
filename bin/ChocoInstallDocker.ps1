@@ -235,7 +235,6 @@ function AddUserToDockerGroupWithConsent {
     }
 }
 
-
 function CanInstallDocker {
     $isProOrEnterprise, $isProOrEnterpriseReason = CheckWindowsEdition
     $hyperVAvailable, $hyperVAvailableReason = CheckHyperVAvailability
@@ -251,7 +250,8 @@ function CanInstallDocker {
     $WSL2SupportedReason
     )
 
-    $canInstall = $isProOrEnterprise -and ($hyperVAvailable -or ($IsWSL2Supported -and $IsWSLInstalled -and $virtualizationEnabled))
+    $canInstall = ($isProOrEnterprise -and ($hyperVAvailable -or $virtualizationEnabled)) -or ($virtualizationEnabled)
+
     $complete_result = $results -join " "
 
     # Determine message and color
@@ -294,10 +294,20 @@ function InstallOrUninstallDockerAndDependencies {
     # Perform action based on user choice
     switch ($userChoice) {
         "install" {
-            # Some more function to do the job
-            EnableHyperVWithConsent
-            InstallWSLWithConsent
-            SetDefaultWSL2WithConsent
+            # Check the Windows edition to decide whether to prompt for Hyper-V and WSL
+            $isProOrEnterprise, $isProOrEnterpriseReason = CheckWindowsEdition
+
+            if ($isProOrEnterprise) {
+                EnableHyperVWithConsent
+                InstallWSLWithConsent
+                SetDefaultWSL2WithConsent
+            }
+            else {
+                # For Home editions, just ensure WSL 2 is set up
+                InstallWSLWithConsent
+                SetDefaultWSL2WithConsent
+            }
+
             InstallDockerDesktopWithConsent
             AddUserToDockerGroupWithConsent
         }
