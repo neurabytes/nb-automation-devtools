@@ -31,13 +31,13 @@ $tools = @{
     'git' = '2.42.0'
     'intellijidea-community' = '2023.2.3'
     'meld' = '3.22.0'
-    'postman' = '10.18.10'
     'winscp' = '6.1.2'
     'terraform' = '1.6.2'
-    'openjdk' = '21.0.1'
-    'maven' = '3.9.5'
+    'openjdk' = '17.0.2'
     'nodejs' = '21.1.0'
-    'scala' = '2.11.4'
+    'maven' = '3.9.5'
+    'scala.install' = '2.11.4'
+    'postman' = '10.18.10'
 }
 
 # Get a list of currently installed Chocolatey packages
@@ -58,7 +58,7 @@ if ($action -eq "install") {
                 Write-Host "$($tool.Name) is already at version $($tool.Value). No action taken."
             } else {
                 Write-Host "Upgrading $($tool.Name) from version $($installedDetail.Version) to version $($tool.Value)..."
-                choco upgrade $tool.Name --version $tool.Value -y
+                choco upgrade $tool.Name --version $tool.Value -y --force
             }
         } else {
             Write-Host "Installing $($tool.Name) version $($tool.Value)..."
@@ -80,4 +80,32 @@ if ($action -eq "install") {
     Write-Host "Invalid action specified. Please enter either 'install' or 'uninstall'."
 }
 
-Write-Host "All tools processed successfully!"
+# After the action blocks (install or uninstall), fetch the list of installed packages again
+$updatedInstalledPackagesDetails = choco list --local-only -r | ForEach-Object {
+    $parts = $_.Split('|')
+    @{ Name = $parts[0]; Version = $parts[1] }
+}
+
+$installedTools = @()
+$notInstalledTools = @()
+
+foreach ($tool in $tools.GetEnumerator()) {
+    $updatedInstalledDetail = $updatedInstalledPackagesDetails | Where-Object { $_.Name -eq $tool.Name }
+
+    if ($updatedInstalledDetail) {
+        $installedTools += $tool.Name
+    } else {
+        $notInstalledTools += $tool.Name
+    }
+}
+
+# Reporting
+if ($installedTools.Count -gt 0) {
+    Write-Host "Installed tools:" -ForegroundColor Green
+    $installedTools | ForEach-Object { Write-Host $_ -ForegroundColor Green }
+}
+
+if ($notInstalledTools.Count -gt 0) {
+    Write-Host "Tools not installed:" -ForegroundColor Red
+    $notInstalledTools | ForEach-Object { Write-Host $_ -ForegroundColor Red }
+}

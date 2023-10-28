@@ -3,14 +3,13 @@ $tools = @{
     'git' = '2.42.0'
     'intellijidea-community' = '2023.2.3'
     'meld' = '3.22.0'
-    'postman' = '10.18.10'
     'winscp' = '6.1.2'
     'terraform' = '1.6.2'
     'openjdk' = '21.0.1'
     'maven' = '3.9.5'
     'nodejs' = '21.1.0'
     'scala' = '2.11.4'
-    'python' = '3.12.0'
+    'postman' = '10.18.10'
 }
 
 # Initialize an empty hash table to store dependencies
