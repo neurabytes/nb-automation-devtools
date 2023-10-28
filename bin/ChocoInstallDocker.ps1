@@ -20,9 +20,33 @@ function GetUserConsent {
 }
 
 function CheckWindowsEdition {
-    $windowsEdition = (Get-WmiObject -Class Win32_OperatingSystem).Caption
-    return $windowsEdition -match 'Pro|Enterprise', $windowsEdition
+    # Initialize variable for Windows edition
+    $windowsEdition = $null
+
+    # First try using Get-CimInstance
+    try {
+        $windowsEdition = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
+    } catch {
+        Write-Host "Failed using Get-CimInstance. Trying Get-WmiObject..."
+    }
+
+    # If the previous method failed, try using Get-WmiObject
+    if (-not $windowsEdition) {
+        try {
+            $windowsEdition = (Get-WmiObject -Class Win32_OperatingSystem).Caption
+        } catch {
+            Write-Host "Failed using both Get-CimInstance and Get-WmiObject."
+            return $null
+        }
+    }
+
+    # Check if the edition is Pro or Enterprise
+    $isProOrEnterprise = $windowsEdition -match 'Pro|Enterprise'
+
+    # Return the result
+    return $isProOrEnterprise, $windowsEdition
 }
+
 
 function CheckHyperVAvailability {
     $hyperVStates = Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq 'Microsoft-Hyper-V' -or $_.FeatureName -eq 'Microsoft-Hyper-V-All' }
@@ -77,11 +101,19 @@ function CanInstallDocker {
     $canInstall = $isProOrEnterprise -and $hyperVAvailable -and $virtualizationEnabled
     $complete_result = $results -join " "
 
-    Write-Output ("Can you install Docker? " + $canInstall)
-    Write-Output ("Reason: " + $complete_result)
+    # Determine message and color
+    if ($canInstall) {
+        $message = "You can install Docker because $complete_result"
+        $color = "Green"
+    } else {
+        $message = "You cannot install Docker because $complete_result"
+        $color = "Red"
+    }
 
+    # Write colored output
+    Write-Host $message -ForegroundColor $color
 
-    if (-not $hyperVAvailable) {
+    if ($isProOrEnterprise -and -not $hyperVAvailable) {
         Write-Output "Hyper-V is not available on your system. We can enable it for you."
         $hyperV_result = ""
         if (GetUserConsent) {

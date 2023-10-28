@@ -1,17 +1,29 @@
-# Neurabytes Scripts for Development Setup
+# Neurabytes Automation for DevTools
 
-This repository contains two essential PowerShell scripts intended for developers:
+This repository contains a dynamic collection of scripts designed to streamline the development setup process across various platforms. The goal is to provide an automated, efficient, and continuously evolving set of tools that cater to the ever-changing needs of developers.
+
+## Features:
+
+1. Cross-platform Compatibility: Works seamlessly across different operating systems and environments.
+2. Automation: Reduces manual setup and configuration, letting developers focus on what they do best: code.
+3. Adaptive: Regular updates and additions to ensure the tools remain relevant and efficient.
+
+
+## Getting Started
+
+### Prerequisites
+
+- Windows Operating System
+- PowerShell with administrative rights
+
+
+### Overview
 
 1. `ChocoToolSetup.ps1`: Ensures that Chocolatey is installed and then facilitates the installation, upgrade, or uninstallation of a predefined list of developer tools.
 2. `PyenvSetup.ps1`: Facilitates the installation or uninstallation of `pyenv-win` on Windows platforms.
 3. `ChocoInstallDocker.ps1`: Installs Docker Desktop for Windows using Chocolatey.
 
-## Prerequisites
-
-- Windows Operating System
-- PowerShell with administrative rights
-
-## Usage
+---
 
 ### Chocolatey Tools Setup Script (ChocoToolSetup.ps1)
 
@@ -24,6 +36,8 @@ Set-ExecutionPolicy Bypass -Scope Process
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/ChocoToolSetup.ps1')
 ```
 
+---
+
 ### Pyenv Setup Script (`PyenvSetup.ps1`)
 
 This script aids in setting up `pyenv-win` to manage Python versions on a Windows machine. It can both install and uninstall `pyenv-win`.
@@ -35,6 +49,8 @@ Set-ExecutionPolicy Bypass -Scope Process
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/PyenvSetup.ps1')
 ```
 
+---
+
 ### Docker Desktop for Windows Setup Script (`ChocoInstallDocker.ps1`)
 This script installs Docker Desktop for Windows using Chocolatey.
 
@@ -44,6 +60,7 @@ This script installs Docker Desktop for Windows using Chocolatey.
 Set-ExecutionPolicy Bypass -Scope Process
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/ChocoInstallDocker.ps1')
 ```
+---
 
 
 ##  Security Note
