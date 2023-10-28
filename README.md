@@ -19,7 +19,8 @@ This script ensures that Chocolatey is installed. After this verification, it wi
 **To Run the Script Directly from GitHub:**
 
 ```powershell
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO_NAME/main/ChocoToolSetup.ps1')
+Set-ExecutionPolicy Bypass -Scope Process
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/ChocoToolSetup.ps1')
 ```
 
 ### Pyenv Setup Script (`PyenvSetup.ps1`)
@@ -29,7 +30,8 @@ This script aids in setting up `pyenv-win` to manage Python versions on a Window
 **To Run the Script Directly from GitHub:**
 
 ```powershell
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO_NAME/main/PyenvSetup.ps1')
+Set-ExecutionPolicy Bypass -Scope Process
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/PyenvSetup.ps1')
 ```
 
 ##  Security Note
@@ -46,3 +48,6 @@ This command allows scripts to run in your current session. Remember, only use t
 
 ## Contribution
 If you have suggestions for improvements or bug fixes, feel free to submit a pull request or open an issue.
+
+
+
