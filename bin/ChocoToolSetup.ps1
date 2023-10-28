@@ -7,7 +7,7 @@ function Test-IsAdmin {
 # Check for admin rights
 if (-not (Test-IsAdmin)) {
     Write-Host "Please run this script as an Administrator!" -ForegroundColor Red
-    Exit
+    return
 }
 
 # Change background color to yellow and text color to black
