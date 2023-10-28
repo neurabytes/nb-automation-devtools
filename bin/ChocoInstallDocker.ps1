@@ -10,14 +10,6 @@ if (-not (Test-IsAdmin)) {
     return
 }
 
-function GetUserConsent {
-    $userConsent = $null
-    while ($userConsent -notmatch '^[yn]$') {
-        $userConsent = Read-Host "Would you like to enable Hyper-V? (Y/N)"
-        $userConsent = $userConsent.ToLower()
-    }
-    return $userConsent -eq 'y'
-}
 
 function CheckWindowsEdition {
     # Initialize variable for Windows edition
@@ -36,69 +28,230 @@ function CheckWindowsEdition {
             $windowsEdition = (Get-WmiObject -Class Win32_OperatingSystem).Caption
         } catch {
             Write-Host "Failed using both Get-CimInstance and Get-WmiObject."
-            return $null
+            return $false, "We could not identify the Windows version, so no."
         }
     }
 
     # Check if the edition is Pro or Enterprise
     $isProOrEnterprise = $windowsEdition -match 'Pro|Enterprise'
 
-    # Return the result
-    return $isProOrEnterprise, $windowsEdition
+    # Provide feedback to the user
+    if ($isProOrEnterprise) {
+        return $true, "You have a Windows edition ($windowsEdition) that supports Hyper-V and Containers."
+    } else {
+        return $false, "You have $windowsEdition, which doesn't natively support Hyper-V. Consider upgrading to Pro or Enterprise edition."
+    }
 }
 
 
 function CheckHyperVAvailability {
     $hyperVStates = Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq 'Microsoft-Hyper-V' -or $_.FeatureName -eq 'Microsoft-Hyper-V-All' }
-    return ($hyperVStates | Where-Object { $_.State -eq 'Enabled' }).Count -gt 0
+
+    if (-not $hyperVStates) {
+        return $false, "We couldn't determine the Hyper-V status on your system."
+    }
+
+    $isHyperVEnabled = ($hyperVStates | Where-Object { $_.State -eq 'Enabled' }).Count -gt 0
+
+    if ($isHyperVEnabled) {
+        return $true, "Hyper-V is available and enabled on your system."
+    } else {
+        return $false, "Hyper-V is either unavailable or not enabled on your system."
+    }
 }
 
 
 function CheckVirtualizationEnabled {
-    return (Get-ComputerInfo).HyperVisorPresent
-}
+    $virtualizationEnabled = (Get-ComputerInfo).HyperVisorPresent
 
-function GetWindowsEditionFeedback($isProOrEnterprise, $windowsEdition) {
-    if ($isProOrEnterprise) {
-        return "You have a Windows edition ($windowsEdition) that supports Hyper-V and Containers."
-    } else {
-        return "You have $windowsEdition, which doesn't natively support Hyper-V. Consider upgrading to Pro or Enterprise edition."
-    }
-}
-
-function GetHyperVFeedback($hyperVAvailable) {
-    if ($hyperVAvailable) {
-        return "Hyper-V is available and enabled on your system."
-    } else {
-        return "Hyper-V is either unavailable or not enabled on your system."
-    }
-}
-
-function GetVirtualizationFeedback($virtualizationEnabled) {
     if ($virtualizationEnabled) {
-        return "Hardware-assisted virtualization is enabled on your system."
+        return $true, "Hardware-assisted virtualization is enabled on your system."
     } else {
-        return "Hardware-assisted virtualization is not enabled. Please restart your computer, enter BIOS/UEFI settings, and enable virtualization. Consult your computer's manual or manufacturer for guidance."
+        return $false, "Hardware-assisted virtualization is not enabled. Please restart your computer, enter BIOS/UEFI settings, and enable virtualization. Consult your computer's manual or manufacturer for guidance."
     }
 }
 
-function EnableHyperV {
-    Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
-    return "Hyper-V is now being enabled. You might need to restart your computer to complete the process."
+
+function CheckWSL2Supported {
+    $osVersion = [System.Environment]::OSVersion.Version
+    if ($osVersion.Build -lt 18362) {
+        $message = "Your current Windows version does not support WSL 2. Please update Windows."
+        return $false, $message
+    }
+
+    $message = "Your current Windows version supports WSL 2."
+    return $true, $message
 }
+
+
+function CheckWSLInstalled {
+    $wslFeature = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
+
+    if ($wslFeature.State -eq 'Enabled') {
+        return $true, "WSL is installed."
+    }
+
+    return $false, "WSL is not installed."
+}
+
+
+function EnableHyperVWithConsent {
+    # Get user's consent
+    $userConsent = $null
+    while ($userConsent -notmatch '^[yn]$') {
+        $userConsent = Read-Host "Would you like to enable Hyper-V? (Y/N)"
+        $userConsent = $userConsent.ToLower()
+    }
+
+    # If user gives consent, enable Hyper-V
+    if ($userConsent -eq 'y') {
+        Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+        Write-Host "Hyper-V is now being enabled. You might need to restart your computer to complete the process."
+    } else {
+        Write-Host "Hyper-V enablement aborted by the user."
+    }
+}
+
+
+function InstallWSLWithConsent {
+    $IsWSLInstalled, $isWSLInstallReason = CheckWSLInstalled
+
+    if (-not $IsWSLInstalled) {
+        Write-Host "WSL is not installed because: $isWSLInstallReason"
+        $consent = Read-Host "Would you like to install WSL? (yes/no)"
+
+        if ($consent -eq "yes") {
+            Write-Host "Installing WSL..."
+
+            # Install the WSL feature
+            Start-Process -Verb runas powershell -ArgumentList "Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux"
+
+            # After this step, you may want to prompt the user to restart their PC
+            # as enabling WSL often requires a restart.
+            # Once restarted, you can then proceed to install a Linux distribution.
+            Write-Host "WSL installation initiated. Please follow the prompts. Restart your computer if necessary."
+
+        } else {
+            Write-Host "WSL installation aborted by the user."
+        }
+    } else {
+        Write-Host "WSL is already installed."
+    }
+}
+
+
+function SetDefaultWSL2WithConsent {
+    # Assuming the CheckWSLInstalled and CheckWSL2Supported functions are defined elsewhere
+    $IsWSLInstalled, $isWSLInstallReason = CheckWSLInstalled
+    $IsWSL2Supported, $WSL2SupportedReason = CheckWSL2Supported
+
+    # Check if WSL is installed
+    if (-not $IsWSLInstalled) {
+        Write-Host "WSL is not installed. Reason: $isWSLInstallReason" -ForegroundColor Red
+        return
+    }
+
+    # Check if WSL 2 is supported
+    if (-not $IsWSL2Supported) {
+        Write-Host "WSL 2 is not supported. Reason: $WSL2SupportedReason" -ForegroundColor Red
+        return
+    }
+
+    # Ask user for consent
+    $userConsent = Read-Host "Do you want to set WSL default version to 2? (yes/no)"
+
+    if ($userConsent -ne "yes") {
+        Write-Host "Operation cancelled by the user." -ForegroundColor Yellow
+        return
+    }
+
+    # Try to set WSL default version to 2
+    try {
+        wsl --set-default-version 2
+        Write-Host "WSL default version has been set to 2." -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Failed to set WSL default version to 2." -ForegroundColor Red
+    }
+}
+
+
+function InstallDockerDesktopWithConsent {
+    # Get user's consent
+    $userConsent = $null
+    while ($userConsent -notmatch '^[yn]$') {
+        $userConsent = Read-Host "Would you like to install Docker Desktop? (Y/N)"
+        $userConsent = $userConsent.ToLower()
+    }
+
+    # If user gives consent, proceed with Docker Desktop installation
+    if ($userConsent -eq 'y') {
+        Write-Host "Installing Docker Desktop..."
+
+        try {
+            Invoke-Command -ScriptBlock { choco install docker-desktop -y }
+            Write-Host "Docker Desktop installed successfully!" -ForegroundColor Green
+        } catch {
+            Write-Host "Error encountered while installing Docker Desktop: $_" -ForegroundColor Red
+        }
+    } else {
+        Write-Host "Docker Desktop installation aborted by the user."
+    }
+}
+
+
+function AddUserToDockerGroupWithConsent {
+
+    # List all users
+    $users = Get-LocalUser | Where-Object { $_.Enabled -eq $true } | Select-Object Name, Description
+
+    $index = 1
+    $users | ForEach-Object {
+        Write-Host "$index. $($_.Name) - $($_.Description)"
+        $index++
+    }
+
+    # Take input from the user
+    $selection = Read-Host "Enter the number of the user you want to add to the docker-users group"
+
+    # Confirm the selection
+    $userSelection = $users[$selection - 1].Name
+    $confirmation = Read-Host "You selected $userSelection. Do you want to proceed? (yes/no)"
+
+    if ($confirmation -eq "yes") {
+        try {
+            # Add user to docker-users group
+            Add-LocalGroupMember -Group "docker-users" -Member $userSelection 2>$null
+            Write-Host "$userSelection has been added to the docker-users group. Please restart your computer to complete the process."
+        } catch {
+            if ($_.Exception.Message -like "* is already a member of group docker-users*") {
+                Write-Host "$userSelection is already a member of the docker-users group. You might still have to restart your computer to complete the process."
+            } else {
+                #                Write-Error "An error occurred: $_"
+            }
+        }
+    } else {
+        Write-Host "Operation cancelled."
+    }
+}
+
 
 function CanInstallDocker {
-    $isProOrEnterprise, $windowsEdition = CheckWindowsEdition
-    $hyperVAvailable = CheckHyperVAvailability
-    $virtualizationEnabled = CheckVirtualizationEnabled
+    $isProOrEnterprise, $isProOrEnterpriseReason = CheckWindowsEdition
+    $hyperVAvailable, $hyperVAvailableReason = CheckHyperVAvailability
+    $virtualizationEnabled, $virtualizationEnabledReason = CheckVirtualizationEnabled
+    $IsWSLInstalled, $isWSLInstallReason = CheckWSLInstalled
+    $IsWSL2Supported, $WSL2SupportedReason = CheckWSL2Supported
 
     $results = @(
-    GetWindowsEditionFeedback $isProOrEnterprise $windowsEdition
-    GetHyperVFeedback $hyperVAvailable
-    GetVirtualizationFeedback $virtualizationEnabled
+    $isProOrEnterpriseReason,
+    $hyperVAvailableReason,
+    $virtualizationEnabledReason,
+    $isWSLInstallReason,
+    $WSL2SupportedReason
     )
 
-    $canInstall = $isProOrEnterprise -and $hyperVAvailable -and $virtualizationEnabled
+    $canInstall = $isProOrEnterprise -and ($hyperVAvailable -or ($IsWSL2Supported -and $IsWSLInstalled -and $virtualizationEnabled))
     $complete_result = $results -join " "
 
     # Determine message and color
@@ -113,19 +266,46 @@ function CanInstallDocker {
     # Write colored output
     Write-Host $message -ForegroundColor $color
 
-    if ($isProOrEnterprise -and -not $hyperVAvailable) {
-        Write-Output "Hyper-V is not available on your system. We can enable it for you."
-        $hyperV_result = ""
-        if (GetUserConsent) {
-            $hyperV_result += EnableHyperV
-        } else {
-            $hyperV_result += "You chose not to enable Hyper-V. If you change your mind later, run this script again."
-        }
-        Write-Output ($hyperV_result)
-    }
-
-    return
+    return $canInstall
 }
 
-CanInstallDocker
 
+
+function InstallOrUninstallDockerAndDependencies {
+
+    $canInstall = CanInstallDocker
+
+    # If Docker can't be installed, exit early
+    if (-not $canInstall) {
+        Write-Host "You cannot install Docker based on your system's requirements. Exiting." -ForegroundColor Red
+        return
+    }
+
+    # Get user input for the desired action
+    $userChoice = $null
+    while ($null -eq $userChoice) {
+        $userChoice = Read-Host "Do you want to install or uninstall Docker? (install/uninstall)"
+        if ($userChoice -ne "install" -and $userChoice -ne "uninstall") {
+            Write-Host "Invalid choice. Please select 'install' or 'uninstall'."
+            $userChoice = $null
+        }
+    }
+
+    # Perform action based on user choice
+    switch ($userChoice) {
+        "install" {
+            # Some more function to do the job
+            EnableHyperVWithConsent
+            InstallWSLWithConsent
+            SetDefaultWSL2WithConsent
+            InstallDockerDesktopWithConsent
+            AddUserToDockerGroupWithConsent
+        }
+        "uninstall" {
+            UninstallDockerDesktop
+        }
+    }
+}
+
+
+InstallOrUninstallDockerAndDependencies
