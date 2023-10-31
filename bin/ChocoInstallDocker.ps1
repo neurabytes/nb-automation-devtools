@@ -199,7 +199,6 @@ function InstallDockerDesktopWithConsent {
     }
 }
 
-
 function AddUserToDockerGroupWithConsent {
 
     # List all users
@@ -211,29 +210,55 @@ function AddUserToDockerGroupWithConsent {
         $index++
     }
 
-    # Take input from the user
-    $selection = Read-Host "Enter the number of the user you want to add to the docker-users group"
+    # Take input from the user for multiple selections
+    $selection = Read-Host "Enter the numbers (separated by commas) of the users you want to add to the docker-users group"
+
+    $selectedUsers = $selection -split ',' | ForEach-Object {
+        $users[$_.Trim() - 1].Name
+    }
+
+    # Get the usernames from the current members of docker-users group
+    $currentMembers = Get-LocalGroupMember -Group "docker-users" | ForEach-Object { $_.Name.Split('\')[-1] }
+
+    # Identify users who will be removed
+    $usersToRemove = $currentMembers | Where-Object { $selectedUsers -notcontains $_ }
 
     # Confirm the selection
-    $userSelection = $users[$selection - 1].Name
-    $confirmation = Read-Host "You selected $userSelection. Do you want to proceed? (yes/no)"
+    $confirmationMessage = "You selected $($selectedUsers -join ', ') to be added to the group."
+    if ($usersToRemove.Count -gt 0) {
+        $confirmationMessage += " The following users will be removed from the docker-users group: $($usersToRemove -join ', ')."
+    }
+    $confirmation = Read-Host "$confirmationMessage Do you want to proceed? (yes/no)"
 
     if ($confirmation -eq "yes") {
-        try {
-            # Add user to docker-users group
-            Add-LocalGroupMember -Group "docker-users" -Member $userSelection 2>$null
-            Write-Host "$userSelection has been added to the docker-users group. Please restart your computer to complete the process."
-        } catch {
-            if ($_.Exception.Message -like "* is already a member of group docker-users*") {
-                Write-Host "$userSelection is already a member of the docker-users group. You might still have to restart your computer to complete the process."
+        # Remove users who were not selected
+        $usersToRemove | ForEach-Object {
+            Remove-LocalGroupMember -Group "docker-users" -Member $_
+            Write-Host "Removed $_ from docker-users group." -ForegroundColor Red
+        }
+
+        # Add selected users
+        $selectedUsers | ForEach-Object {
+            if ($currentMembers -contains $_) {
+                Write-Host "$_ is already a member of the docker-users group."
             } else {
-                #                Write-Error "An error occurred: $_"
+                try {
+                    Add-LocalGroupMember -Group "docker-users" -Member $_
+                    Write-Host "Added $_ to docker-users group." -ForegroundColor Green
+                } catch {
+                    Write-Error "An error occurred: $_"
+                }
             }
         }
+
+        Write-Host "Please restart your computer to complete the process."
+
     } else {
         Write-Host "Operation cancelled."
     }
 }
+
+
 
 function CanInstallDocker {
     $isProOrEnterprise, $isProOrEnterpriseReason = CheckWindowsEdition
