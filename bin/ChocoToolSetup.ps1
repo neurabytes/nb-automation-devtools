@@ -28,16 +28,50 @@ if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
 
 # List of developer tools with specific versions to install/upgrade
 $tools = @{
+
+    # General developer tools
     'git' = '2.42.0'
+
+    # IDEs
     'intellijidea-community' = '2023.2.3'
+    'R.Studio' = '2023.9.1'
+
+    # For comapring files
     'meld' = '3.22.0'
+
+    # For unziping files
     'winscp' = '6.1.2'
-    'terraform' = '1.6.2'
-    'openjdk' = '17.0.2'
-    'nodejs' = '21.1.0'
-    'maven' = '3.9.5'
-    'scala.install' = '2.11.4'
+
+    # for testing APIs
     'postman' = '10.18.10'
+
+    'terraform' = '1.6.2'
+
+    # Java Lanuage
+    'openjdk' = '17.0.2'
+    'maven' = '3.9.5'
+
+    # Scala Language
+    'scala.install' = '2.11.4'
+
+    # NodeJS Language
+    'nodejs' = '21.1.0'
+
+    # R Language
+    'r' = '4.3.1'
+
+    # required for git code signing
+    'Gpg4win' = '4.2.0'
+
+
+    # Database tools
+    'SQLite' = '3.43.2' # or the latest version
+    'dbeaver' = '23.2.1' # or the latest version you want
+
+
+
+    'powerbi' = '2.122.746.0' # If you use PowerBI for visualization
+    'tableau-public' = '2023.3.0'
 }
 
 # Get a list of currently installed Chocolatey packages
