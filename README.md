@@ -19,13 +19,14 @@ This repository contains a dynamic collection of scripts designed to streamline 
 
 ### Overview
 
-1. `ChocoToolSetup.ps1`: Ensures that Chocolatey is installed and then facilitates the installation, upgrade, or uninstallation of a predefined list of developer tools.
-2. `PyenvSetup.ps1`: Facilitates the installation or uninstallation of `pyenv-win` on Windows platforms.
-3. `ChocoInstallDocker.ps1`: Installs Docker Desktop for Windows using Chocolatey.
+1. `Setup-DevEnvironment.ps1`: Ensures that Chocolatey is installed and then facilitates the installation, upgrade, or uninstallation of a predefined list of developer tools.
+2. `Setup-PyEnvWin.ps1`: Facilitates the installation or uninstallation of `pyenv-win` on Windows platforms.
+3. `Setup-DockerEnvironment.ps1`: Installs Docker Desktop for Windows using Chocolatey.
+4. `Setup-GitGPG.ps1`: Configures Git to sign commits and tags with GPG on Windows.
 
 ---
 
-### Chocolatey Tools Setup Script (ChocoToolSetup.ps1)
+### Chocolatey Tools Setup Script (Setup-DevEnvironment.ps1)
 
 This script ensures that Chocolatey is installed. After this verification, it will either install, upgrade, or uninstall a specified list of developer tools based on the versions provided in the script.
 
@@ -33,12 +34,12 @@ This script ensures that Chocolatey is installed. After this verification, it wi
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/ChocoToolSetup.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/Setup-DevEnvironment.ps1')
 ```
 
 ---
 
-### Pyenv Setup Script (`PyenvSetup.ps1`)
+### Pyenv Setup Script (`Setup-PyEnvWin.ps1`)
 
 This script aids in setting up `pyenv-win` to manage Python versions on a Windows machine. It can both install and uninstall `pyenv-win`.
 
@@ -46,21 +47,34 @@ This script aids in setting up `pyenv-win` to manage Python versions on a Window
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/PyenvSetup.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/Setup-PyEnvWin.ps1')
 ```
 
 ---
 
-### Docker Desktop for Windows Setup Script (`ChocoInstallDocker.ps1`)
+### Docker Desktop for Windows Setup Script (`Setup-DockerEnvironment.ps1`)
 This script installs Docker Desktop for Windows using Chocolatey.
 
 **To Run the Script Directly from GitHub:**
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/ChocoInstallDocker.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/Setup-DockerEnvironment.ps1')
 ```
 ---
+
+### Git GPG Setup Script (`Setup-GitGPG.ps1`)
+
+This script configures Git to sign commits and tags with GPG on Windows. It automates the process of installing GPG and setting it up with Git for commit signature verification.
+
+**To Run the Script Directly from GitHub:**
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/Setup-GitGPG.ps1')
+```
+---
+
 
 
 ##  Security Note
