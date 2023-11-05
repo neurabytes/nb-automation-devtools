@@ -47,6 +47,9 @@ $tools = @{
 
     'terraform' = '1.6.2'
 
+    'awscli' = '2.13.32'
+    'azure-cli' = '2.53.1'
+
     # Java Lanuage
     'openjdk' = '17.0.2'
     'maven' = '3.9.5'
