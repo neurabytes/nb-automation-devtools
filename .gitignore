@@ -54,5 +54,5 @@ fabric.properties
 .idea/httpRequests
 conf/conf.ps1
 .idea/
-/bin/pyenv-win-custom.0.0.1.nupkg
-/bin/mykey.asc
+/windows/bin/pyenv-win-custom.0.0.1.nupkg
+/windows/bin/mykey.asc

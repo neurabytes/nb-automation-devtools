@@ -34,7 +34,7 @@ This script ensures that Chocolatey is installed. After this verification, it wi
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/Setup-DevEnvironment.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-DevEnvironment.ps1')
 ```
 
 ---
@@ -47,7 +47,7 @@ This script aids in setting up `pyenv-win` to manage Python versions on a Window
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/Setup-PyEnvWin.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-PyEnvWin.ps1')
 ```
 
 ---
@@ -59,7 +59,7 @@ This script installs Docker Desktop for Windows using Chocolatey.
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/Setup-DockerEnvironment.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-DockerEnvironment.ps1')
 ```
 ---
 
@@ -71,7 +71,7 @@ This script configures Git to sign commits and tags with GPG on Windows. It auto
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/bin/Setup-GitGPG.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-GitGPG.ps1')
 ```
 ---
 
