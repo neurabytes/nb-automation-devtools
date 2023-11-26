@@ -1,3 +1,15 @@
+# Function to check if running as an administrator
+function Test-IsAdmin {
+    $admin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+    return $admin
+}
+
+# Check for admin rights
+if (Test-IsAdmin) {
+    Write-Host "Please run this script as a non Administrator!" -ForegroundColor Red
+    return
+}
+
 function Get-UserProfiles {
     $userDirectories = Get-ChildItem 'C:\Users\' | Where-Object { $_.PSIsContainer } | ForEach-Object { $_.Name }
     return $userDirectories
