@@ -30,10 +30,15 @@ This repository contains a dynamic collection of scripts designed to streamline 
 
 This script ensures that Chocolatey is installed. After this verification, it will either install, upgrade, or uninstall a specified list of developer tools based on the versions provided in the script.
 
+Note: Please make sure that you run this as administrator.
+
 **To Run the Script Directly from GitHub:**
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
+```
+
+```powershell
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-DevEnvironment.ps1')
 ```
 
@@ -43,10 +48,15 @@ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.
 
 This script aids in setting up `pyenv-win` to manage Python versions on a Windows machine. It can both install and uninstall `pyenv-win`.
 
+Note: Please make sure that you run this as non administrator.
+
 **To Run the Script Directly from GitHub:**
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
+```
+
+```powershell
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-PyEnvWin.ps1')
 ```
 
@@ -59,8 +69,12 @@ This script installs Docker Desktop for Windows using Chocolatey.
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
+```
+
+```powershell
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-DockerEnvironment.ps1')
 ```
+
 ---
 
 ### Git GPG Setup Script (`Setup-GitGPG.ps1`)
@@ -71,8 +85,12 @@ This script configures Git to sign commits and tags with GPG on Windows. It auto
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force
+```
+
+```powershell
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-GitGPG.ps1')
 ```
+
 ---
 
 
