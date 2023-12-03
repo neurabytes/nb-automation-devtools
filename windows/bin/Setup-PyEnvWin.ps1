@@ -117,10 +117,15 @@ if ($action -eq "install") {
 
     cloneOrUpdatePyEnv
 
+    # Get the location of powershell.exe
+    $powershellPath = (Get-Command powershell).Source
+
+
     # Set the PYENV variables
     [System.Environment]::SetEnvironmentVariable('PYENV', $pyenvPath, "User")
     [System.Environment]::SetEnvironmentVariable('PYENV_ROOT', $pyenvPath, "User")
     [System.Environment]::SetEnvironmentVariable('PYENV_HOME', $pyenvPath, "User")
+    [System.Environment]::SetEnvironmentVariable('PIPENV_SHELL', $powershellPath, "User")
 
     # Add the necessary paths to PATH variable
     AddToUserPath ($env:USERPROFILE + "\.pyenv\pyenv-win\bin")
@@ -144,6 +149,7 @@ elseif ($action -eq "uninstall") {
     [System.Environment]::SetEnvironmentVariable('PYENV', $null, "User")
     [System.Environment]::SetEnvironmentVariable('PYENV_ROOT', $null, "User")
     [System.Environment]::SetEnvironmentVariable('PYENV_HOME', $null, "User")
+    [System.Environment]::SetEnvironmentVariable('PIPENV_SHELL', $null, "User")
 
     # Remove the paths from PATH variable
     RemoveFromUserPath ("\.pyenv\pyenv-win\bin")
