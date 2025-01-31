@@ -23,7 +23,8 @@
     "SourceTree": "3.4.21",
     "github-desktop": "3.4.15",
     "make": "4.4.1",
-    "act-cli": "0.2.71"
+    "act-cli": "0.2.71",
+    "cursoride": "0.45.3"
   },
   "ignore_checksum_tools": [
     "powerbi"
