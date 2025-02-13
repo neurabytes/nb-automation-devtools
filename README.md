@@ -1,138 +1,35 @@
-# Neurabytes Automation for DevTools
+# Commons Directory Documentation
 
-This repository contains a dynamic collection of scripts designed to streamline the development setup process across various platforms. The goal is to provide an automated, efficient, and continuously evolving set of tools that cater to the ever-changing needs of developers.
+This documentation explains the contents and usage of the `commons` directory only. For full repository documentation, please refer to the root README.md.
 
-## Features:
+## Purpose
+The `commons` directory contains reusable code that we want to share across multiple repositories. Instead of duplicating code, we maintain it here and distribute it to other repositories as needed.
 
-1. Cross-platform Compatibility: Works seamlessly across different operating systems and environments.
-2. Automation: Reduces manual setup and configuration, letting developers focus on what they do best: code.
-3. Adaptive: Regular updates and additions to ensure the tools remain relevant and efficient.
+## Repository Organization
+1. `commons/`: 
+   - Contains all shared code that will be distributed to other repositories
+   - These files will be copied and committed to other repositories
 
+2. Other Directories:
+   - Contain reusable automation code that stays in this repository
+   - Are cloned temporarily when running Makefile commands
+   - Are not committed to other repositories
+   - Can be updated with new features independently
 
-## Getting Started
+## Directory Contents
+- `.build/`: Repository setup scripts
+  - `ensure-scripts-repo.ps1`: Windows setup script
+  - `ensure-scripts-repo.sh`: Unix setup script
+- `Makefile`: Shared build commands for all repositories
 
-### Prerequisites
+## How Distribution Works
+1. Files in the `commons` directory are identified for sharing
+2. Our automation tools copy these files to other repositories
+3. Only files from `commons` are committed to other repositories
+4. When you run Makefile commands, other directories are temporarily cloned as needed
 
-- Windows Operating System
-- PowerShell with administrative rights
-
-
-### Overview
-
-1. How to use GitHub token for your CLI
-2. `Setup-DevEnvironment.ps1`: Ensures that Chocolatey is installed and then facilitates the installation, upgrade, or uninstallation of a predefined list of developer tools.
-3. `Setup-PyEnvWin.ps1`: Facilitates the installation or uninstallation of `pyenv-win` on Windows platforms.
-4. `Setup-DockerEnvironment.ps1`: Installs Docker Desktop for Windows using Chocolatey.
-5. `Setup-GitGPG.ps1`: Configures Git to sign commits and tags with GPG on Windows.
-
----
-
-
-### How to use GitHub token on your CLI
-
-These steps explain on how to generate the token and then use it in the local cli.
-
-1. Click to generate GitHub Token: [Generate GitHub Token](https://github.com/settings/tokens/new?description=local_cli_custom_git_hub&scopes=repo,gist,read:org,workflow,read:user,user:email)
-2. Once you generate your token then save it on your local securely in a file.
-3. You can use it in the command line using one of the following commands
-
-**For Windows**
-```powershell
-$env:CUSTOM_GITHUB_TOKEN = "TOKEN HERE"
-```
-
-**For Linux**
-```bash
-export CUSTOM_GITHUB_TOKEN = "TOKEN HERE"
-```
-
-
-
----
-
-### Chocolatey Tools Setup Script (Setup-DevEnvironment.ps1)
-
-This script ensures that Chocolatey is installed. After this verification, it will either install, upgrade, or uninstall a specified list of developer tools based on the versions provided in the script.
-
-Note: Please make sure that you run this as administrator.
-
-**To Run the Script Directly from GitHub:**
-
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process
-```
-
-```powershell
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-DevEnvironment.ps1')
-```
-
----
-
-### Pyenv Setup Script (`Setup-PyEnvWin.ps1`)
-
-This script aids in setting up `pyenv-win` to manage Python versions on a Windows machine. It can both install and uninstall `pyenv-win`.
-
-Note: Please make sure that you run this as non administrator.
-
-**To Run the Script Directly from GitHub:**
-
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process
-```
-
-```powershell
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-PyEnvWin.ps1')
-```
-
----
-
-### Docker Desktop for Windows Setup Script (`Setup-DockerEnvironment.ps1`)
-This script installs Docker Desktop for Windows using Chocolatey.
-
-**To Run the Script Directly from GitHub:**
-
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process
-```
-
-```powershell
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-DockerEnvironment.ps1')
-```
-
----
-
-### Git GPG Setup Script (`Setup-GitGPG.ps1`)
-
-This script configures Git to sign commits and tags with GPG on Windows. It automates the process of installing GPG and setting it up with Git for commit signature verification.
-
-**To Run the Script Directly from GitHub:**
-
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force
-```
-
-```powershell
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-GitGPG.ps1')
-```
-
----
-
-
-
-##  Security Note
-The PowerShell commands provided above pull scripts directly from the web and execute them. This can be risky if you're not entirely certain of the script's source or its content. Always ensure you trust the source and have inspected the script content before executing.
-
-##  Additional Note
-Given the default security policies on Windows, you might encounter an error like "Running scripts is disabled on this system". If this happens, you can temporarily allow the script to run with the following command, but exercise this with caution:
-
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process
-```
-
-This command allows scripts to run in your current session. Remember, only use this if you trust the source of the script.
-
-## Contribution
-If you have suggestions for improvements or bug fixes, feel free to submit a pull request or open an issue.
-
-
-
+## Next Steps
+We are developing an automation script that will:
+1. Scan through our repositories
+2. Copy the relevant files from this `commons` folder
+3. Commit only the necessary shared code to each repository
