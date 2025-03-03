@@ -1,0 +1,13 @@
+[
+  ".build/.gitignore",
+  ".build/automation.py",
+  ".github/workflows/cd_backend.yml",
+  ".github/workflows/cd_frontend.yml",
+  ".github/workflows/cd_terraform.yml",
+  ".github/workflows/ci_backend.yml",
+  ".github/workflows/ci_frontend.yml",
+  ".github/workflows/ci_terraform.yml",
+  ".github/workflows/release.yml",
+  ".github/workflows/security-scan.yml",
+  "Makefile"
+]
