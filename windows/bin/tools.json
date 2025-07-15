@@ -25,7 +25,8 @@
     "make": "4.4.1",
     "act-cli": "0.2.79",
     "cursoride": "1.2.4",
-    "visualstudio2022buildtools": "117.14.6"
+    "visualstudio2022buildtools": "117.14.6",
+    "miniconda3": "4.12.0"
   },
   "ignore_checksum_tools": [
     "powerbi"
