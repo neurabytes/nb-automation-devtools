@@ -135,9 +135,50 @@ function InstallWSLWithConsent {
             Write-Host "WSL installation aborted by the user."
         }
     } else {
-        Write-Host "WSL is already installed."
+        Write-Host "WSL is already installed."\
+        # ✅ Try to update WSL right away
+        try {
+            Write-Host "Attempting to update WSL to the latest version..."
+            wsl --update
+            Write-Host "WSL has been successfully updated." -ForegroundColor Green
+        } catch {
+            Write-Host "⚠️  Failed to update WSL. Error: $_" -ForegroundColor Red
+        }
     }
 }
+
+
+function InstallUbuntuForWSLIfMissing {
+    Write-Host "`Checking for existing WSL distributions..."
+
+    try {
+        $existingDistros = wsl -l -q 2>&1 | Where-Object { $_ -and ($_ -notmatch "no installed distributions") }
+
+        if (-not $existingDistros -or $existingDistros.Count -eq 0) {
+            Write-Host "No WSL distributions found on your system." -ForegroundColor Yellow
+
+            $consent = Read-Host "Would you like to install Ubuntu for WSL? (yes/no)"
+            if ($consent -eq "yes") {
+                try {
+                    Write-Host "Installing Ubuntu... this may take a few minutes."
+                    wsl --install -d Ubuntu
+                    Write-Host "Ubuntu installation initiated. It will auto-launch to complete setup." -ForegroundColor Green
+                    Write-Host "Please wait for Ubuntu to initialize and create your Linux username when prompted."
+                } catch {
+                    Write-Host "Failed to install Ubuntu: $_" -ForegroundColor Red
+                }
+            } else {
+                Write-Host "Ubuntu installation skipped by user." -ForegroundColor Yellow
+            }
+        } else {
+            Write-Host "WSL distributions already installed:" -ForegroundColor Green
+            $existingDistros | ForEach-Object { Write-Host "  - $_" }
+        }
+    } catch {
+        Write-Host "Error while checking WSL distributions: $_" -ForegroundColor Red
+    }
+}
+
 
 
 function SetDefaultWSL2WithConsent {
@@ -177,25 +218,50 @@ function SetDefaultWSL2WithConsent {
 
 
 function InstallDockerDesktopWithConsent {
-    # Get user's consent
-    $userConsent = $null
-    while ($userConsent -notmatch '^[yn]$') {
-        $userConsent = Read-Host "Would you like to install Docker Desktop? (Y/N)"
-        $userConsent = $userConsent.ToLower()
-    }
+    # Check if Docker is already installed via Chocolatey
+    $dockerInstalled = choco list --local-only | Select-String "docker-desktop"
 
-    # If user gives consent, proceed with Docker Desktop installation
-    if ($userConsent -eq 'y') {
-        Write-Host "Installing Docker Desktop..."
+    if ($dockerInstalled) {
+        Write-Host "Docker Desktop is already installed." -ForegroundColor Yellow
 
-        try {
-            Invoke-Command -ScriptBlock { choco install docker-desktop -y }
-            Write-Host "Docker Desktop installed successfully!" -ForegroundColor Green
-        } catch {
-            Write-Host "Error encountered while installing Docker Desktop: $_" -ForegroundColor Red
+        # Ask user if they want to update it
+        $updateConsent = $null
+        while ($updateConsent -notmatch '^[yn]$') {
+            $updateConsent = Read-Host "Would you like to update Docker Desktop to the latest version? (Y/N)"
+            $updateConsent = $updateConsent.ToLower()
         }
+
+        if ($updateConsent -eq 'y') {
+            try {
+                Write-Host "Updating Docker Desktop..."
+                Invoke-Command -ScriptBlock { choco upgrade docker-desktop -y }
+                Write-Host "Docker Desktop has been updated." -ForegroundColor Green
+            } catch {
+                Write-Host "Error updating Docker Desktop: $_" -ForegroundColor Red
+            }
+        } else {
+            Write-Host "Docker update skipped by user."
+        }
+
     } else {
-        Write-Host "Docker Desktop installation aborted by the user."
+        # Ask to install Docker
+        $installConsent = $null
+        while ($installConsent -notmatch '^[yn]$') {
+            $installConsent = Read-Host "Docker Desktop is not installed. Would you like to install it? (Y/N)"
+            $installConsent = $installConsent.ToLower()
+        }
+
+        if ($installConsent -eq 'y') {
+            try {
+                Write-Host "Installing Docker Desktop..."
+                Invoke-Command -ScriptBlock { choco install docker-desktop -y }
+                Write-Host "Docker Desktop installed successfully!" -ForegroundColor Green
+            } catch {
+                Write-Host "Error installing Docker Desktop: $_" -ForegroundColor Red
+            }
+        } else {
+            Write-Host "Docker Desktop installation aborted by user."
+        }
     }
 }
 
@@ -333,14 +399,128 @@ function InstallOrUninstallDockerAndDependencies {
                 SetDefaultWSL2WithConsent
             }
 
+#            InstallUbuntuForWSLIfMissing
+#            ConfigureDockerInWSLWithConsent
             InstallDockerDesktopWithConsent
             AddUserToDockerGroupWithConsent
         }
         "uninstall" {
+#            UninstallUbuntuWSL
             UninstallDockerDesktop
         }
     }
 }
 
+
+
+
+#
+#function ConfigureDockerInWSLWithConsent {
+#    # Step 1: Check for NVIDIA GPU
+#    $gpuPresent = Get-CimInstance Win32_VideoController | Where-Object { $_.Name -like "*NVIDIA*" }
+#
+#    if (-not $gpuPresent) {
+#        Write-Host "No NVIDIA GPU detected. Skipping WSL Docker GPU configuration." -ForegroundColor Yellow
+#        return
+#    }
+#
+#    Write-Host "NVIDIA GPU detected: $($gpuPresent.Name)" -ForegroundColor Green
+#
+#    # Step 2: Check if WSL is installed
+#    $IsWSLInstalled, $reason = CheckWSLInstalled
+#    if (-not $IsWSLInstalled) {
+#        Write-Host "WSL is not installed: $reason" -ForegroundColor Red
+#        return
+#    }
+#
+#    # Step 3: List WSL distros
+#    $wslDistros = wsl -l -q
+#    if (-not $wslDistros) {
+#        Write-Host "No WSL distributions found. Please install one (e.g., Ubuntu from Microsoft Store)." -ForegroundColor Red
+#        return
+#    }
+#
+#    Write-Host "`nAvailable WSL Distributions:" -ForegroundColor Cyan
+#    $wslDistros | ForEach-Object { Write-Host "  - $_" }
+#
+#    $selectedDistro = Read-Host "`nEnter the name of the WSL distro you want to configure"
+#
+#    if (-not ($wslDistros -contains $selectedDistro)) {
+#        Write-Host "Invalid WSL distribution name." -ForegroundColor Red
+#        return
+#    }
+#
+#    # Step 4: Ask user for consent
+#    $consent = $null
+#    while ($consent -notmatch '^[yn]$') {
+#        $consent = Read-Host "Do you want to configure Docker GPU support in '$selectedDistro'? (Y/N)"
+#        $consent = $consent.ToLower()
+#    }
+#
+#    if ($consent -eq 'y') {
+#        Write-Host "Running configuration commands in WSL ($selectedDistro)..." -ForegroundColor Cyan
+#
+#        try {
+#            wsl -d $selectedDistro -- bash -c "
+#                echo 'Updating packages...' &&
+#                sudo apt update &&
+#                echo 'Installing NVIDIA Container Toolkit...' &&
+#                sudo apt install -y nvidia-container-toolkit &&
+#                echo 'Restarting Docker...' &&
+#                sudo systemctl restart docker || echo 'Note: systemctl may fail if systemd is not enabled'
+#            "
+#            Write-Host "Docker GPU support configured in '$selectedDistro'." -ForegroundColor Green
+#        } catch {
+#            Write-Host "Failed to run WSL configuration: $_" -ForegroundColor Red
+#        }
+#    } else {
+#        Write-Host "Operation cancelled by the user." -ForegroundColor Yellow
+#    }
+#}
+
+
+#
+#
+#function UninstallUbuntuWSL {
+#    Write-Host "Checking if Ubuntu is installed in WSL..."
+#
+#    # List installed WSL distros
+#    $distros = wsl -l -q
+#    if (-not ($distros -contains "Ubuntu")) {
+#        Write-Host "dUbuntu is not currently installed in WSL." -ForegroundColor Yellow
+#        return
+#    }
+#
+#    # Confirm removal
+#    $confirm = Read-Host "Ubuntu WSL instance found. Do you want to completely uninstall it? This will delete all Ubuntu data! (yes/no)"
+#    if ($confirm -ne "yes") {
+#        Write-Host "Operation cancelled by user." -ForegroundColor Yellow
+#        return
+#    }
+#
+#    try {
+#        Write-Host "Unregistering Ubuntu from WSL..."
+#        wsl --unregister Ubuntu
+#        Write-Host "Ubuntu has been removed from WSL." -ForegroundColor Green
+#    } catch {
+#        Write-Host "Failed to unregister Ubuntu: $_" -ForegroundColor Red
+#        return
+#    }
+#
+#    # Optional: remove Ubuntu app from Microsoft Store
+#    $storeConfirm = Read-Host "Do you want to uninstall the Ubuntu app from Microsoft Store too? (yes/no)"
+#    if ($storeConfirm -eq "yes") {
+#        try {
+#            Write-Host "Attempting to remove Ubuntu app..."
+#            Get-AppxPackage "*ubuntu*" | Remove-AppxPackage
+#            Write-Host "Ubuntu app removed from Microsoft Store." -ForegroundColor Green
+#        } catch {
+#            Write-Host "Could not remove Ubuntu app from Store: $_" -ForegroundColor Yellow
+#        }
+#    } else {
+#        Write-Host "Ubuntu app remains installed. You can uninstall it manually from the Start menu." -ForegroundColor Cyan
+#    }
+#}
+#
 
 InstallOrUninstallDockerAndDependencies
