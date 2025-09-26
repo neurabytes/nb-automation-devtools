@@ -1,0 +1,109 @@
+name: Security Scan
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
+  workflow_dispatch:  # Allow manual triggers
+
+env:
+  CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install safety
+        run: pip install safety
+        
+      - name: Check Python dependencies
+        run: safety check
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Check Node.js dependencies
+        run: |
+          cd frontend
+          npm audit
+
+  sast-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Bandit
+        uses: python-security/bandit-action@v1
+        with:
+          path: .
+          
+      - name: Run SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog-actions-scan@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+
+  compliance-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform
+          framework: terraform
+          
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: terraform
+
+  report-generation:
+    needs: [dependency-check, sast-scan, secret-scan, compliance-check]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Security Report
+        run: |
+          echo "Security Scan Results" > security-report.md
+          echo "===================" >> security-report.md
+          echo "Generated on $(date)" >> security-report.md
+          
+      - name: Upload Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: security-report.md
+          
+      - name: Send Notification
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: 'security-alerts'
+          slack-message: "Security scan completed. Check the report for details."
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }} 

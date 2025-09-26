@@ -1,0 +1,187 @@
+name: CD - Terraform
+
+on:
+  push:
+    branches:
+      - feature/*     # Deploy to dev
+      - develop      # Deploy to sqa
+      - release/*    # Deploy to val
+      - main        # Deploy to prod
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '.github/workflows/cd_terraform.yml'
+      - 'Makefile'
+  
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - non-prod-acc
+          - prod-acc
+          - dev
+          - sqa
+          - val
+          - prod
+      aws_region:
+        description: 'AWS Region'
+        required: true
+        default: 'us-east-1'
+        type: choice
+        options:
+          - us-east-1
+          - us-east-2
+          - us-west-1
+          - us-west-2
+          - eu-west-1
+
+env:
+  TERRAFORM_VERSION: '1.7.0'
+  PYTHON_VERSION: "3.11"
+  CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+  AWS_REGION: ${{ github.event.inputs.aws_region || 'us-east-1' }}
+
+permissions:
+  id-token: write   # Required for requesting the JWT
+  contents: read    # Required for actions/checkout
+
+jobs:
+  determine_environment:
+    name: Determine Environment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+    steps:
+      - name: Set environment based on branch or input
+        id: set-env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          else
+            case "${{ github.ref }}" in
+              refs/heads/feature/*)
+                echo "environment=dev" >> $GITHUB_OUTPUT
+                ;;
+              refs/heads/develop)
+                echo "environment=sqa" >> $GITHUB_OUTPUT
+                ;;
+              refs/heads/release/*)
+                echo "environment=val" >> $GITHUB_OUTPUT
+                ;;
+              refs/heads/main)
+                echo "environment=prod" >> $GITHUB_OUTPUT
+                ;;
+              *)
+                echo "environment=dev" >> $GITHUB_OUTPUT
+                ;;
+            esac
+          fi
+
+  validate:
+    name: Quick Validation
+    needs: [determine_environment]
+    runs-on: ubuntu-latest
+    env:
+      TF_WORKSPACE: ${{ needs.determine_environment.outputs.environment }}
+      TF_VAR_aws_region: ${{ github.event.inputs.aws_region || 'us-east-1' }}
+      TF_VAR_environment: ${{ needs.determine_environment.outputs.environment }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials and Assume Role
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-region: ${{ github.event.inputs.aws_region || 'us-east-1' }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActionsSession
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          make install
+          make init_templates
+
+      - name: Quick Validation
+        run: |
+          make tf_lint
+          make init
+          make validate
+
+  deploy:
+    name: Deploy
+    needs: [determine_environment, validate]
+    runs-on: ubuntu-latest
+    env:
+      TF_WORKSPACE: ${{ needs.determine_environment.outputs.environment }}
+      TF_VAR_aws_region: ${{ github.event.inputs.aws_region || 'us-east-1' }}
+      TF_VAR_environment: ${{ needs.determine_environment.outputs.environment }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials and Assume Role
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-region: ${{ github.event.inputs.aws_region || 'us-east-1' }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActionsSession
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          make install
+          make init_templates
+
+      - name: Plan and Apply
+        run: |
+          make init
+          make plan
+          make apply
+
+      - name: Run Post-Deploy Checks
+        run: |
+          echo "Running post-deployment health checks for ${{ needs.determine_environment.outputs.environment }}..."
+          # Add environment-specific health check commands here
+
+  # notify:
+  #   name: Notify
+  #   needs: [determine_environment, deploy]
+  #   if: always()
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Send Deployment Status
+  #       uses: slackapi/slack-github-action@v1.24.0
+  #       with:
+  #         channel-id: 'deployments'
+  #         slack-message: |
+  #           Terraform Deployment Status: ${{ needs.deploy.result }}
+  #           Environment: ${{ needs.determine_environment.outputs.environment }}
+  #           Branch: ${{ github.ref_name }}
+  #           Workflow: ${{ github.workflow }}
+  #           Triggered by: ${{ github.actor }}
+  #           ${{ needs.deploy.result == 'success' && '✅ Deployment successful!' || '❌ Deployment failed!' }}
+  #       env:
+  #         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
