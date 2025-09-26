@@ -28,7 +28,8 @@
     "visualstudio2022buildtools": "117.14.14",
     "miniconda3": "4.12.0",
     "temurin17": "17.0.14.7",
-    "gradle": "9.1.0"
+    "gradle": "9.1.0",
+    "maven": "3.9.11"
   },
   "ignore_checksum_tools": [
     "powerbi"
