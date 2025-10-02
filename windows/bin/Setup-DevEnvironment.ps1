@@ -4,7 +4,7 @@ function CheckAndDeleteToolsJson {
 
     if (Test-Path -Path $toolsJsonPath) {
         Write-Host "tools.json exists. Deleting the file."
-        Remove-Item -Path $toolsJsonPath -Force
+#        Remove-Item -Path $toolsJsonPath -Force
     } else {
         Write-Host "tools.json does not exist."
     }
@@ -43,23 +43,39 @@ try {
     }
 
     # Download tools.json if it does not exist
-    if (-not (Test-Path -Path "tools.json")) {
-        Write-Host "Downloading tools.json..."
-        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/tools.json' -OutFile 'tools.json'
-    }
+#    if (-not (Test-Path -Path "tools.json")) {
+#        Write-Host "Downloading tools.json..."
+#        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/tools.json' -OutFile 'tools.json'
+#    }
 
     # Read tools and ignore_checksum_tools from JSON file
     $jsonData = Get-Content -Raw -Path "tools.json" | ConvertFrom-Json
 
+    # Display role selection menu
+    Write-Host "Please select your role:" -ForegroundColor Cyan
+    $roleNames = @($jsonData.roles.PSObject.Properties.Name)
+    for ($i = 0; $i -lt $roleNames.Length; $i++) {
+        $roleName = $roleNames[$i]
+        $roleDescription = $jsonData.roles.$roleName.description
+        Write-Host "$($i + 1). $roleDescription" -ForegroundColor Black
+    }
+    
+    # Get user selection
+    do {
+        $selection = Read-Host "Enter your choice (1-$($roleNames.Length))"
+        $selectedIndex = [int]$selection - 1
+    } while ($selectedIndex -lt 0 -or $selectedIndex -ge $roleNames.Length)
+    
+    $selectedRole = $roleNames[$selectedIndex]
+    Write-Host "Selected role: $($jsonData.roles.$selectedRole.description)" -ForegroundColor Green
+
+    # Get tools for selected role
     $tools = @{}
-    foreach ($key in $jsonData.tools.PSObject.Properties.Name) {
-        $tools[$key] = $jsonData.tools.$key
+    foreach ($key in $jsonData.roles.$selectedRole.tools.PSObject.Properties.Name) {
+        $tools[$key] = $jsonData.roles.$selectedRole.tools.$key
     }
 
-    $ignore_checksum_tools = @{}
-    foreach ($key in $jsonData.ignore_checksum_tools.PSObject.Properties.Name) {
-        $ignore_checksum_tools[$key] = $jsonData.ignore_checksum_tools.$key
-    }
+    $ignore_checksum_tools = $jsonData.ignore_checksum_tools
 
     # Get a list of currently installed Chocolatey packages
     $installedPackagesDetails = choco list --local-only -r | ForEach-Object {
