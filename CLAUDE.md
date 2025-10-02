@@ -16,14 +16,20 @@ This is the Neurabytes Automation DevTools repository, containing cross-platform
 ## Key Components
 
 ### Tools Configuration
-- `tools.json` contains versioned tool definitions used by setup scripts
-- Scripts download this file dynamically from the GitHub repository
+- `tools.json` contains role-based tool definitions with versioned tools for each role
+- Supports roles: data_engineer, software_engineer, data_analyst, data_scientist
+- Scripts download this file dynamically from the GitHub repository  
 - The `ignore_checksum_tools` array lists tools that skip checksum validation
+- State management tracks installed tools in `C:\ProgramData\nb-automation\installed_tools_state.json`
 
 ### Setup Scripts (Windows)
-- `Setup-DevEnvironment.ps1` - Main script for installing/upgrading developer tools via Chocolatey
+- `Setup-DevEnvironment.ps1` - Main script with role-based tool installation via Chocolatey
+  - Presents role selection menu (1-4) for users to choose their development focus
+  - Automatically detects and uninstalls tools removed from role configuration
+  - Maintains state file to track nb-automation managed tools
+  - Supports install/uninstall operations with version-specific handling
 - `Setup-PyEnvWin.ps1` - Python version management setup for Windows
-- `Setup-DockerEnvironment.ps1` - Docker Desktop installation
+- `Setup-DockerEnvironment.ps1` - Docker Desktop installation  
 - `Setup-GitGPG.ps1` - Git GPG signature configuration
 
 ### Setup Scripts (macOS)
