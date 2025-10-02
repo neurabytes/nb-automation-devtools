@@ -1,34 +1,77 @@
 {
-  "tools": {
-    "git": "2.51.0.2",
-    "intellijidea-community": "2025.2.2",
-    "R.Studio": "2025.9.1",
-    "meld": "3.22.2",
-    "winscp": "6.5.3",
-    "postman": "11.46.6",
-    "terraform": "1.13.3",
-    "awscli": "2.31.8",
-    "azure-cli": "2.77.0",
-    "openjdk": "25.0.0",
-    "maven": "3.9.11",
-    "scala.portable": "2.10.3",
-    "nodejs": "24.9.0",
-    "r": "4.4.2",
-    "go": "1.25.1",
-    "Gpg4win": "4.4.1",
-    "SQLite": "3.50.4",
-    "dbeaver": "25.2.1",
-    "powerbi": "2.137.952.0",
-    "tableau-public": "2025.2.2",
-    "SourceTree": "3.4.26",
-    "github-desktop": "3.5.2",
-    "make": "4.4.1",
-    "act-cli": "0.2.82",
-    "lm-studio": "0.3.28",
-    "visualstudio2022buildtools": "117.14.16",
-    "miniconda3": "4.12.0",
-    "temurin17": "17.0.14.7",
-    "gradle": "9.1.0"
+  "roles": {
+    "data_engineer": {
+      "description": "Data Engineer - Tools for data pipeline development, cloud platforms, and data processing",
+      "tools": {
+        "git": "2.51.0",
+        "Gpg4win": "4.4.1",
+        "github-desktop": "3.5.0",
+        "SourceTree": "3.4.24",
+        "make": "4.4.1",
+        "awscli": "2.28.25",
+        "azure-cli": "2.77.0",
+        "terraform": "1.14.0-alpha20250903",
+        "SQLite": "3.50.2",
+        "dbeaver": "25.2.0",
+        "miniconda3": "4.12.0",
+        "scala.portable": "2.11.4",
+        "postman": "11.46.6"
+      }
+    },
+    "software_engineer": {
+      "description": "Software Engineer - Tools for application development, IDEs, and build systems",
+      "tools": {
+        "git": "2.51.0",
+        "Gpg4win": "4.4.1",
+        "github-desktop": "3.5.0",
+        "SourceTree": "3.4.24",
+        "make": "4.4.1",
+        "intellijidea-community": "2025.2.1",
+        "openjdk": "22.0.2",
+        "maven": "3.9.11",
+        "nodejs": "24.4.0",
+        "go": "1.25.1",
+        "visualstudio2022buildtools": "117.14.11",
+        "act-cli": "0.2.81",
+        "cursoride": "1.2.4",
+        "postman": "11.46.6"
+      }
+    },
+    "data_analyst": {
+      "description": "Data Analyst - Tools for data analysis, visualization, and statistical computing",
+      "tools": {
+        "git": "2.51.0",
+        "Gpg4win": "4.4.1",
+        "github-desktop": "3.5.0",
+        "SourceTree": "3.4.24",
+        "make": "4.4.1",
+        "R.Studio": "2025.5.1",
+        "r": "4.4.2",
+        "powerbi": "2.137.952.0",
+        "tableau-public": "2025.1.2",
+        "SQLite": "3.50.2",
+        "dbeaver": "25.2.0",
+        "miniconda3": "4.12.0",
+        "postman": "11.46.6"
+      }
+    },
+    "data_scientist": {
+      "description": "Data Scientist - Tools for machine learning, statistical analysis, and research",
+      "tools": {
+        "git": "2.51.0",
+        "Gpg4win": "4.4.1",
+        "github-desktop": "3.5.0",
+        "SourceTree": "3.4.24",
+        "make": "4.4.1",
+        "R.Studio": "2025.5.1",
+        "r": "4.4.2",
+        "miniconda3": "4.12.0",
+        "SQLite": "3.50.2",
+        "dbeaver": "25.2.0",
+        "postman": "11.46.6",
+        "cursoride": "1.2.4"
+      }
+    }
   },
   "ignore_checksum_tools": [
     "powerbi"
