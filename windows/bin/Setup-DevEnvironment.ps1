@@ -4,7 +4,7 @@ function CheckAndDeleteToolsJson {
 
     if (Test-Path -Path $toolsJsonPath) {
         Write-Host "tools.json exists. Deleting the file."
-        Remove-Item -Path $toolsJsonPath -Force
+        # Remove-Item -Path $toolsJsonPath -Force
     } else {
         Write-Host "tools.json does not exist."
     }
@@ -31,7 +31,7 @@ function Get-PreviousState {
         try {
             return Get-Content $stateFilePath -Raw | ConvertFrom-Json
         } catch {
-            Write-Host "Warning: Could not read state file. Creating new state." -ForegroundColor Yellow
+            Write-Host "Warning: Could not read state file. Creating new state." -ForegroundColor DarkYellow
             return $null
         }
     }
@@ -53,16 +53,16 @@ function Save-CurrentState {
     
     try {
         $newState | ConvertTo-Json -Depth 3 | Set-Content $stateFilePath -Encoding UTF8
-        Write-Host "State saved to: $stateFilePath" -ForegroundColor Green
+        Write-Host "State saved to: $stateFilePath" -ForegroundColor DarkGreen
     } catch {
-        Write-Host "Warning: Could not save state file: $_" -ForegroundColor Yellow
+        Write-Host "Warning: Could not save state file: $_" -ForegroundColor DarkYellow
     }
 }
 
 function Set-YellowBackgroundBlackText {
     $script:originalBackgroundColor = $Host.UI.RawUI.BackgroundColor
     $script:originalForegroundColor = $Host.UI.RawUI.ForegroundColor
-    $Host.UI.RawUI.BackgroundColor = "Yellow"
+    $Host.UI.RawUI.BackgroundColor = "White"
     $Host.UI.RawUI.ForegroundColor = "Black"
     Clear-Host
 }
@@ -80,14 +80,14 @@ function Get-ToolsAndRoleSelection {
     # Download tools.json if it does not exist
     if (-not (Test-Path -Path "tools.json")) {
         Write-Host "Downloading tools.json..."
-        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/tools.json' -OutFile 'tools.json'
+        # Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/tools.json' -OutFile 'tools.json'
     }
 
     # Read tools and ignore_checksum_tools from JSON file
     $jsonData = Get-Content -Raw -Path "tools.json" | ConvertFrom-Json
 
     # Display role selection menu
-    Write-Host "Please select your role:" -ForegroundColor Cyan
+    Write-Host "Please select your role:" -ForegroundColor Black
     $roleNames = @($jsonData.roles.PSObject.Properties.Name)
     for ($i = 0; $i -lt $roleNames.Length; $i++) {
         $roleName = $roleNames[$i]
@@ -102,7 +102,7 @@ function Get-ToolsAndRoleSelection {
     } while ($selectedIndex -lt 0 -or $selectedIndex -ge $roleNames.Length)
 
     $selectedRole = $roleNames[$selectedIndex]
-    Write-Host "Selected role: $($jsonData.roles.$selectedRole.description)" -ForegroundColor Green
+    Write-Host "Selected role: $($jsonData.roles.$selectedRole.description)" -ForegroundColor DarkGreen
 
     # Get tools for selected role
     $tools = @{}
@@ -134,7 +134,7 @@ function Remove-ObsoleteTools {
         $tools
     )
 
-    Write-Host "Checking for tools that were removed from configuration..." -ForegroundColor Cyan
+    Write-Host "Checking for tools that were removed from configuration..." -ForegroundColor Black
 
     # Find tools that were previously installed but not in current role
     $toolsToUninstall = @()
@@ -145,18 +145,18 @@ function Remove-ObsoleteTools {
     }
 
     if ($toolsToUninstall.Count -gt 0) {
-        Write-Host "The following tools were removed from your role configuration and will be uninstalled:" -ForegroundColor Yellow
-        $toolsToUninstall | ForEach-Object { Write-Host "  - $_" -ForegroundColor Yellow }
+        Write-Host "The following tools were removed from your role configuration and will be uninstalled:" -ForegroundColor DarkYellow
+        $toolsToUninstall | ForEach-Object { Write-Host "  - $_" -ForegroundColor DarkYellow }
 
         $confirm = Read-Host "Proceed with uninstalling removed tools? (y/n)"
         if ($confirm -eq 'y' -or $confirm -eq 'Y') {
             foreach ($tool in $toolsToUninstall) {
-                Write-Host "Uninstalling removed tool: $tool" -ForegroundColor Red
+                Write-Host "Uninstalling removed tool: $tool" -ForegroundColor DarkRed
                 choco uninstall $tool -y
             }
         }
     } else {
-        Write-Host "No tools need to be removed." -ForegroundColor Green
+        Write-Host "No tools need to be removed." -ForegroundColor DarkGreen
     }
 }
 
@@ -176,9 +176,9 @@ function Install-Or-Upgrade-Tools {
 
         if ($installedDetail) { # If package is installed
             if ($installedDetail.Version -eq $tool.Value) {
-                Write-Host "$($tool.Name) is already at version $($tool.Value). Marking as managed by nb-automation."
+                Write-Host "$($tool.Name) is already at version $($tool.Value). Marking as managed by nb-automation." -ForegroundColor DarkGreen
             } else {
-                Write-Host "Upgrading $($tool.Name) from version $($installedDetail.Version) to version $($tool.Value)..."
+                Write-Host "Upgrading $($tool.Name) from version $($installedDetail.Version) to version $($tool.Value)..." -ForegroundColor Black
                 if ($ignore_checksum_tools -contains $tool.Name) {
                     choco upgrade $tool.Name --version $tool.Value -y --force --ignore-checksums
                 } else {
@@ -186,7 +186,7 @@ function Install-Or-Upgrade-Tools {
                 }
             }
         } else {
-            Write-Host "Installing $($tool.Name) version $($tool.Value)..."
+            Write-Host "Installing $($tool.Name) version $($tool.Value)..." -ForegroundColor Black
 
             if ($ignore_checksum_tools -contains $tool.Name) {
                 choco install $tool.Name --version $tool.Value -y --ignore-checksums
@@ -209,10 +209,10 @@ function Uninstall-SelectedTools {
         $installedDetail = $installedPackagesDetails | Where-Object { $_.Name -eq $tool.Name }
 
         if ($installedDetail) { # If package is installed
-            Write-Host "Uninstalling $($tool.Name) version $($installedDetail.Version)..."
+            Write-Host "Uninstalling $($tool.Name) version $($installedDetail.Version)..." -ForegroundColor DarkRed
             choco uninstall $tool.Name -y
         } else {
-            Write-Host "$($tool.Name) is not installed. No action taken."
+            Write-Host "$($tool.Name) is not installed. No action taken." -ForegroundColor Black
         }
     }
 }
@@ -230,7 +230,12 @@ function Update-ToolStateAndReport {
         $toolsAndRole
     )
 
-    $updatedInstalledPackagesDetails = $toolsAndRole.installedPackagesDetails
+    # Get a list of currently installed Chocolatey packages
+    $updatedInstalledPackagesDetails = choco list --local-only -r | ForEach-Object {
+        $parts = $_.Split('|')
+        @{ Name = $parts[0]; Version = $parts[1] }
+    }
+
     $tools = $toolsAndRole.tools
 
     $installedTools = @()
@@ -264,10 +269,10 @@ function Update-ToolStateAndReport {
             $successfullyInstalledTools[$tool] = $tools[$tool]
         }
         Save-CurrentState -selectedRole $selectedRole -installedTools $successfullyInstalledTools
-        Write-Host "Installation state saved for role: $selectedRole" -ForegroundColor Cyan
+        Write-Host "Installation state saved for role: $selectedRole" -ForegroundColor Black
     } elseif ($action -eq "uninstall") {
         Save-CurrentState -selectedRole "" -installedTools @{}
-        Write-Host "State cleared after uninstalling all tools." -ForegroundColor Cyan
+        Write-Host "State cleared after uninstalling all tools." -ForegroundColor Black
     }
 
     return @{
@@ -285,19 +290,19 @@ function Report-ToolStatus {
     )
 
     if ($finalState.installedTools.Count -gt 0) {
-        Write-Host "Installed tools:" -ForegroundColor Green
-        $finalState.installedTools | ForEach-Object { Write-Host $_ -ForegroundColor Green }
+        Write-Host "Installed tools:" -ForegroundColor DarkGreen
+        $finalState.installedTools | ForEach-Object { Write-Host $_ -ForegroundColor DarkGreen }
     }
 
     if ($finalState.notInstalledTools.Count -gt 0) {
-        Write-Host "Tools not installed:" -ForegroundColor Red
-        $finalState.notInstalledTools | ForEach-Object { Write-Host $_ -ForegroundColor Red }
+        Write-Host "Tools not installed:" -ForegroundColor DarkRed
+        $finalState.notInstalledTools | ForEach-Object { Write-Host $_ -ForegroundColor DarkRed }
     }
 
     if ($finalState.userInstalledTools.Count -gt 0) {
-        Write-Host "The following tools are installed on your system but were not managed by this script:" -ForegroundColor Yellow
-        $finalState.userInstalledTools | ForEach-Object { Write-Host "  - $_" -ForegroundColor Yellow }
-        Write-Host "If you want these tools managed by this script, add them to your role configuration." -ForegroundColor Yellow
+        Write-Host "The following tools are installed on your system but were not managed by this script:" -ForegroundColor DarkYellow
+        $finalState.userInstalledTools | ForEach-Object { Write-Host "  - $_" -ForegroundColor DarkYellow }
+        Write-Host "If you want these tools managed by this script, add them to your role configuration." -ForegroundColor DarkYellow
     }
 }
 
@@ -308,7 +313,7 @@ try {
 
     # Check for admin rights
     if (-not (Test-IsAdmin)) {
-        Write-Host "Please run this script as an Administrator!" -ForegroundColor Red
+        Write-Host "Please run this script as an Administrator!" -ForegroundColor DarkRed
         return
     }
 
@@ -336,7 +341,7 @@ try {
     } elseif ($action -eq "uninstall") {
         Uninstall-SelectedTools -tools $tools -installedPackagesDetails $installedPackagesDetails
     } else {
-        Write-Host "Invalid action specified. Please enter either 'install' or 'uninstall'."
+        Write-Host "Invalid action specified. Please enter either 'install' or 'uninstall'." -ForegroundColor DarkRed
     }
 
     # After the action blocks (install or uninstall), fetch the list of installed packages again
@@ -345,7 +350,7 @@ try {
     Report-ToolStatus -finalState $finalState
 
 } catch {
-    Write-Host "An error occurred: $_"
+    Write-Host "An error occurred: $_" -ForegroundColor DarkRed
 } finally {
     CheckAndDeleteToolsJson
 }

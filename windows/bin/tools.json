@@ -4,6 +4,7 @@
       "description": "Data Engineer - Tools for data pipeline development, cloud platforms, and data processing",
       "tools": {
         "git": "2.51.0.2",
+        "intellijidea-community": "2025.2.2",
         "Gpg4win": "4.4.1",
         "github-desktop": "3.5.2",
         "SourceTree": "3.4.26",
@@ -17,7 +18,16 @@
         "scala.portable": "2.11.4",
         "postman": "11.46.6",
         "meld": "3.22.2",
-        "winscp": "6.5.3"
+        "winscp": "6.5.3",
+        "maven": "3.9.11",
+        "nodejs": "24.10.0",
+        "go": "1.25.1",
+        "act-cli": "0.2.82",
+        "lm-studio": "0.3.29",
+        "visualstudio2022buildtools": "117.14.16",
+        "temurin17": "17.0.14.7",
+        "openjdk": "25.0.0.1",
+        "gradle": "9.1.0"
       }
     },
     "software_engineer": {
