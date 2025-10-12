@@ -4,7 +4,7 @@ function CheckAndDeleteToolsJson {
 
     if (Test-Path -Path $toolsJsonPath) {
         Write-Host "tools.json exists. Deleting the file."
-        # Remove-Item -Path $toolsJsonPath -Force
+        Remove-Item -Path $toolsJsonPath -Force
     } else {
         Write-Host "tools.json does not exist."
     }
@@ -80,7 +80,7 @@ function Get-ToolsAndRoleSelection {
     # Download tools.json if it does not exist
     if (-not (Test-Path -Path "tools.json")) {
         Write-Host "Downloading tools.json..."
-        # Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/tools.json' -OutFile 'tools.json'
+        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/tools.json' -OutFile 'tools.json'
     }
 
     # Read tools and ignore_checksum_tools from JSON file
