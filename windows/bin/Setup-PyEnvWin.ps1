@@ -191,6 +191,7 @@ if ($action -eq "install") {
     refreshenv
     python --version
     pip install pipenv
+    pip install pre-commit
     pyenv rehash
 
     Write-Output "Installation is done. Hurray!"
