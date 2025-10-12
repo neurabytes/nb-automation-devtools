@@ -9,7 +9,7 @@
         "github-desktop": "3.5.2",
         "SourceTree": "3.4.26",
         "make": "4.4.1",
-        "awscli": "2.31.12",
+        "awscli": "2.31.13",
         "azure-cli": "2.77.0",
         "terraform": "1.13.3",
         "SQLite": "3.50.4",
@@ -45,7 +45,7 @@
         "go": "1.25.1",
         "visualstudio2022buildtools": "117.14.16",
         "act-cli": "0.2.82",
-        "cursoride": "1.7.43",
+        "cursoride": "1.7.44",
         "postman": "11.46.6"
       }
     },
@@ -81,7 +81,7 @@
         "SQLite": "3.50.4",
         "dbeaver": "25.2.2",
         "postman": "11.46.6",
-        "cursoride": "1.7.43"
+        "cursoride": "1.7.44"
       }
     }
   },
