@@ -102,55 +102,6 @@ function RemoveFromUserPath {
     [System.Environment]::SetEnvironmentVariable('path', $newPath, "User")
 }
 
-function Add-CondaToPath {
-    # Possible Miniconda installation paths
-    $possiblePaths = @(
-        "$env:ProgramData\chocolatey\lib\miniconda3\tools",
-        "$env:ChocolateyInstall\lib\miniconda3\tools",
-        "$env:ProgramFiles\miniconda3",
-        "$env:LocalAppData\miniconda3",
-        "C:\Tools\miniconda3",
-        "C:\bin\miniconda3"
-    )
-
-    foreach ($base in $possiblePaths) {
-        if (Test-Path "$base\condabin\conda.bat") {
-            Write-Host "✅ Miniconda found at: $base"
-
-            # Current user PATH
-            $currentPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
-
-            # Normalize to allow reliable matching (case-insensitive, trimmed)
-            $existingPaths = $currentPath.Split(';') | ForEach-Object { $_.Trim() } | Where-Object { $_ }
-
-            $pathsToAdd = @(
-                "$base",
-                "$base\Scripts",
-                "$base\Library\bin",
-                "$base\condabin"
-            )
-
-            foreach ($p in $pathsToAdd) {
-                if ($existingPaths -notcontains $p) {
-                    $newPath = "$p;" + $currentPath
-                    [System.Environment]::SetEnvironmentVariable("Path", $newPath, "User")
-                    Write-Host "➕ Added to PATH: $p"
-                    $currentPath = $newPath  # Update for next iteration
-                    $existingPaths += $p
-                } else {
-                    Write-Host "⚠️ Already in PATH: $p"
-                }
-            }
-
-            return
-        }
-    }
-
-    Write-Host "❌ Could not find Miniconda installation path."
-}
-
-
-
 
 $pyenvPath = $env:USERPROFILE + "\.pyenv\pyenv-win\"
 
