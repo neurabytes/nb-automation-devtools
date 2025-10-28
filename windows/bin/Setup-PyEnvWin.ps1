@@ -180,8 +180,6 @@ if ($action -eq "install") {
     AddToUserPath ($env:USERPROFILE + "\.pyenv\pyenv-win\bin")
     AddToUserPath ($env:USERPROFILE + "\.pyenv\pyenv-win\shims")
 
-    Add-CondaToPath
-
     Import-Module $env:ChocolateyInstall\helpers\ChocolateyProfile.psm1
     refreshenv
 
