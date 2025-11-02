@@ -3,13 +3,13 @@
     "data_engineer": {
       "description": "Data Engineer - Tools for data pipeline development, cloud platforms, and data processing",
       "tools": {
-        "git": "2.51.1",
-        "intellijidea-community": "2025.2.4",
+        "git": "2.51.2",
+        "intellijidea-community": "2025.2.3",
         "Gpg4win": "4.4.1",
         "github-desktop": "3.5.3",
         "SourceTree": "3.4.26",
         "make": "4.4.1",
-        "awscli": "2.31.22",
+        "awscli": "2.31.27",
         "azure-cli": "2.78.0",
         "terraform": "1.14.0-rc1",
         "SQLite": "3.50.4",
@@ -19,11 +19,11 @@
         "meld": "3.22.2",
         "winscp": "6.5.4",
         "maven": "3.9.11",
-        "nodejs": "22.21.0",
+        "nodejs": "25.1.0",
         "go": "1.25.3",
         "act-cli": "0.2.82",
         "lm-studio": "0.3.29",
-        "visualstudio2022buildtools": "117.14.17",
+        "visualstudio2022buildtools": "117.14.19",
         "temurin17": "17.0.14.7",
         "openjdk": "25.0.0.1",
         "gradle": "9.1.0"
@@ -32,13 +32,13 @@
     "student": {
       "description": "Student - Essential tools for students and general productivity",
       "tools": {
-        "git": "2.51.1",
+        "git": "2.51.2",
         "github-desktop": "3.5.3",
         "make": "4.4.1",
-        "intellijidea-community": "2025.2.4",
+        "intellijidea-community": "2025.2.3",
         "openjdk": "25.0.0.1",
         "maven": "3.9.11",
-        "nodejs": "22.21.0",
+        "nodejs": "25.1.0",
         "go": "1.25.3",
         "postman": "11.46.6"
       }
@@ -46,12 +46,12 @@
     "data_analyst": {
       "description": "Data Analyst - Tools for data analysis, visualization, and statistical computing",
       "tools": {
-        "git": "2.51.1",
+        "git": "2.51.2",
         "Gpg4win": "4.4.1",
         "github-desktop": "3.5.3",
         "SourceTree": "3.4.26",
         "make": "4.4.1",
-        "R.Studio": "2025.9.1",
+        "R.Studio": "2025.9.2",
         "r": "4.4.2",
         "powerbi": "2.137.952.0",
         "tableau-public": "2025.2.2",
@@ -63,17 +63,17 @@
     "data_scientist": {
       "description": "Data Scientist - Tools for machine learning, statistical analysis, and research",
       "tools": {
-        "git": "2.51.1",
+        "git": "2.51.2",
         "Gpg4win": "4.4.1",
         "github-desktop": "3.5.3",
         "SourceTree": "3.4.26",
         "make": "4.4.1",
-        "R.Studio": "2025.9.1",
+        "R.Studio": "2025.9.2",
         "r": "4.4.2",
         "SQLite": "3.50.4",
         "dbeaver": "25.2.3",
         "postman": "11.46.6",
-        "cursoride": "2.0.11"
+        "cursoride": "2.0.43"
       }
     }
   },
