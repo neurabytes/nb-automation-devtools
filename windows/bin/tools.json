@@ -37,7 +37,7 @@
         "intellijidea-community": "2025.2.3",
         "openjdk": "25.0.0.1",
         "maven": "3.9.11",
-        "nodejs": "25.1.0",
+        "nodejs": "25.1.0"
       }
     },
     "data_analyst": {
