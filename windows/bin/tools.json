@@ -33,14 +33,11 @@
       "description": "Student - Essential tools for students and general productivity",
       "tools": {
         "git": "2.51.2",
-        "github-desktop": "3.5.3",
         "make": "4.4.1",
         "intellijidea-community": "2025.2.3",
         "openjdk": "25.0.0.1",
         "maven": "3.9.11",
         "nodejs": "25.1.0",
-        "go": "1.25.3",
-        "postman": "11.46.6"
       }
     },
     "data_analyst": {
