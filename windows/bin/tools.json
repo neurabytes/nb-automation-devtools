@@ -4,6 +4,7 @@
       "description": "Data Engineer - Tools for data pipeline development, cloud platforms, and data processing",
       "tools": {
         "git": "2.51.2",
+        "gh": "2.83.0",
         "intellijidea-community": "2025.2.3",
         "Gpg4win": "4.4.1",
         "github-desktop": "3.5.3",
@@ -33,6 +34,7 @@
       "description": "Student - Essential tools for students and general productivity",
       "tools": {
         "git": "2.51.2",
+        "gh": "2.83.0",
         "make": "4.4.1",
         "intellijidea-community": "2025.2.3",
         "openjdk": "25.0.0.1",
@@ -44,6 +46,7 @@
       "description": "Data Analyst - Tools for data analysis, visualization, and statistical computing",
       "tools": {
         "git": "2.51.2",
+        "gh": "2.83.0",
         "Gpg4win": "4.4.1",
         "github-desktop": "3.5.3",
         "SourceTree": "3.4.26",
@@ -61,6 +64,7 @@
       "description": "Data Scientist - Tools for machine learning, statistical analysis, and research",
       "tools": {
         "git": "2.51.2",
+        "gh": "2.83.0",
         "Gpg4win": "4.4.1",
         "github-desktop": "3.5.3",
         "SourceTree": "3.4.26",
