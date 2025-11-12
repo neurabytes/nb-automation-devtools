@@ -1,0 +1,14 @@
+name: nb-automation-devtools
+id: ari:cloud:compass:d7a6c568-0b4f-4b12-aa39-555f70febc24:component/2c0b9004-3ba7-4605-81c6-f4cb7ab59730/46d31961-1b2d-4102-934c-18feaf6b49c2
+description: A dynamic collection of scripts streamlining development setup across platforms. Automated, efficient, and ever-evolving to adapt to the changing needs of developers. Contributions welcome.
+configVersion: 1
+typeId: SERVICE
+fields:
+  tier: 4
+links: []
+relationships:
+  DEPENDS_ON: []
+labels:
+  - language:powershell
+  - source:github
+customFields: null
