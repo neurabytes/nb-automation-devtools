@@ -23,17 +23,26 @@ GITHUB_TOKEN_URL = (
     "&scopes=repo%2Cgist%2Cread%3Aorg%2Cworkflow%2Cread%3Auser%2Cuser%3Aemail"
 )
 
+GITHUB_TOKENS_PAGE_URL = "https://github.com/settings/tokens"
 
 def configure_gh_cli() -> None:
     print("\nGitHub CLI authentication & Git credential setup")
     print("-------------------------------------------------\n")
 
-    print("Opening the GitHub token creation page in your default browser...\n")
-    webbrowser.open(GITHUB_TOKEN_URL)
+    print("Opening GitHub token pages in your default browser...\n")
+    # Tokens list (for reusing / regenerating existing tokens)
+    webbrowser.open(GITHUB_TOKENS_PAGE_URL)
+    # New token form with prefilled description + scopes
+    webbrowser.open_new_tab(GITHUB_TOKEN_URL)
 
-    print("If the browser did not open, you can open the URL manually:")
-    print(f"   {GITHUB_TOKEN_URL}\n")
-    print("Create the token and paste it below.\n")
+    print("If the browser did not open, you can open these URLs manually:")
+    print(f"  • Tokens list : {GITHUB_TOKENS_PAGE_URL}")
+    print(f"  • New token   : {GITHUB_TOKEN_URL}\n")
+    print(
+        "If you already have a 'Neurabytes Dev Setup' token (even expired), "
+        "you can select it on the tokens page and click 'Regenerate'.\n"
+        "Otherwise, create a new token. Then paste the token below.\n"
+    )
 
     try:
         token = input("Paste your GitHub token (leave empty to skip): ").strip()
@@ -47,26 +56,36 @@ def configure_gh_cli() -> None:
 
     print("\nConfiguring gh with your token...\n")
 
+    try:
+        proc = subprocess.run(
+            ["gh", "auth", "login", "--with-token"],
+            input=(token + "\n").encode("utf-8"),
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+        )
+    except FileNotFoundError:
+        print("The 'gh' CLI is not installed or not on PATH. Skipping gh auth.")
+        return
+
+    if proc.returncode != 0:
+        print("gh auth login failed. Skipping GitHub setup; you can retry later.")
+        return
+
+    print("\nSetting gh as Git credential helper...\n")
     proc = subprocess.run(
-        ["gh", "auth", "login", "--with-token"],
-        input=(token + "\n").encode("utf-8"),
+        ["gh", "auth", "setup-git"],
         stdout=sys.stdout,
         stderr=sys.stderr,
     )
     if proc.returncode != 0:
-        print("gh auth login failed. You may need to run it manually.")
-        return
-
-    print("\nSetting gh as Git credential helper...\n")
-    proc = subprocess.run(["gh", "auth", "setup-git"], stdout=sys.stdout, stderr=sys.stderr)
-    if proc.returncode != 0:
-        print("gh auth setup-git failed. You may need to run it manually.")
+        print("gh auth setup-git failed. Git credential helper was not changed.")
         return
 
     print("\nVerifying GitHub CLI authentication...\n")
     subprocess.run(["gh", "auth", "status"])
 
     print("\nGitHub CLI is authenticated and acting as Git credential helper.\n")
+
 
 def read_multiline_input(end_marker: str = END_MARKER) -> str:
     """
