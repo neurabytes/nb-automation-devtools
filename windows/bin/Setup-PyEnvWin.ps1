@@ -102,6 +102,38 @@ function RemoveFromUserPath {
     [System.Environment]::SetEnvironmentVariable('path', $newPath, "User")
 }
 
+function Invoke-SetupCredentials {
+    param(
+        [string]$PythonExe = "python"
+    )
+
+    $answer = Read-Host -Prompt "Do you also want to set up the credentials now? (yes/no)"
+    if ($answer -ne "yes") {
+        Write-Host "Skipping credentials setup."
+        return
+    }
+
+    $url = "https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/setup_credentials.py"
+    $tmpFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "nb_setup_credentials.py")
+
+    try {
+        Write-Host "Downloading credentials setup script from $url ..."
+        Invoke-WebRequest -Uri $url -OutFile $tmpFile
+
+        Write-Host "Running credentials setup script with $PythonExe ..."
+        & $PythonExe $tmpFile
+    }
+    catch {
+        Write-Error "Failed to download or run credentials setup script: $_"
+    }
+    finally {
+        if (Test-Path $tmpFile) {
+            Remove-Item $tmpFile -Force
+        }
+    }
+}
+
+
 
 $pyenvPath = $env:USERPROFILE + "\.pyenv\pyenv-win\"
 
@@ -142,6 +174,9 @@ if ($action -eq "install") {
     pip install pipenv
     pip install pre-commit
     pyenv rehash
+
+    $pythonCmd = (Get-Command python).Source
+    Invoke-SetupCredentials -PythonExe $pythonCmd
 
     Write-Output "Installation is done. Hurray!"
 }
