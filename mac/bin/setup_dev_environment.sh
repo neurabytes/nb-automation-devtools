@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
 
+set -u  # (keep -e/-o pipefail off while you're still iterating)
+
 TOOLS_JSON="tools.json"
 STATE_DIR="/Library/Application Support/nb-automation"
 STATE_FILE="$STATE_DIR/installed_tools_state.json"
 
+DRY_RUN=true   # <- set to false later when you want real installs
+DEBUG=true     # <- set to false to quiet debug logs
+
+debug() {
+    if [ "${DEBUG}" = "true" ]; then
+        printf '[DEBUG] %s\n' "$*" >&2
+    fi
+}
 
 # -------------------------
 # Helpers
@@ -12,7 +22,11 @@ STATE_FILE="$STATE_DIR/installed_tools_state.json"
 ensure_jq() {
     if ! command -v jq >/dev/null 2>&1; then
         echo "Installing jq..."
-        brew install jq
+        if [ "$DRY_RUN" = "true" ]; then
+            echo "(DRY RUN) brew install jq"
+        else
+            brew install jq
+        fi
     else
         echo "JQ is already installed."
     fi
@@ -29,13 +43,18 @@ check_and_delete_tools_json() {
 
 ensure_state_dir() {
     if [[ ! -d "$STATE_DIR" ]]; then
-        sudo mkdir -p "$STATE_DIR"
-        sudo chmod 777 "$STATE_DIR"
+        if [ "$DRY_RUN" = "true" ]; then
+            debug "Would create state dir: $STATE_DIR (DRY RUN)"
+        else
+            sudo mkdir -p "$STATE_DIR"
+            sudo chmod 777 "$STATE_DIR"
+        fi
     fi
 }
 
 get_previous_state() {
-    ensure_state_dir
+    # Suppress debug from ensure_state_dir so it doesn't pollute JSON
+    ensure_state_dir >/dev/null 2>&1
     if [[ -f "$STATE_FILE" ]]; then
         cat "$STATE_FILE"
     else
@@ -47,7 +66,12 @@ save_current_state() {
     local role="$1"
     local installed_tools_json="$2"
 
-    ensure_state_dir
+    ensure_state_dir >/dev/null 2>&1
+
+    if [ "$DRY_RUN" = "true" ]; then
+        debug "Would save state for role=$role JSON=$installed_tools_json (DRY RUN)"
+        return
+    fi
 
     cat <<EOF | sudo tee "$STATE_FILE" >/dev/null
 {
@@ -60,31 +84,48 @@ EOF
     echo "State saved to $STATE_FILE"
 }
 
-
-
 # -------------------------
-# Load role + tools
+# Homebrew
 # -------------------------
 
 ensure_brew_installed() {
     if ! command -v brew >/dev/null 2>&1; then
         echo "Homebrew missing — installing..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        if [ "$DRY_RUN" = "true" ]; then
+            echo "(DRY RUN) /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+        else
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        fi
     else
         echo "Homebrew is already installed."
     fi
 }
 
+# -------------------------
+# Load role + tools
+# -------------------------
+
 load_tools_and_role() {
+    debug "load_tools_and_role: start"
+
     if [[ ! -f "$TOOLS_JSON" ]]; then
         echo "Downloading tools.json..."
         curl -s -o "$TOOLS_JSON" \
-            https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/tools.json
+            https://raw.githubusercontent.com/neurabytes/nb-local-setup/feature/mac-installation/windows/bin/tools.json
     fi
 
-    # Get role keys as an array
-    mapfile -t ROLE_KEYS < <(jq -r '.roles | keys[]' "$TOOLS_JSON")
+    ROLE_KEYS=()
+    while IFS= read -r role; do
+        ROLE_KEYS+=( "$role" )
+    done < <(jq -r '.roles | keys[]' "$TOOLS_JSON")
+
     ROLE_COUNT=${#ROLE_KEYS[@]}
+    debug "Found $ROLE_COUNT roles"
+
+    if [[ "$ROLE_COUNT" -eq 0 ]]; then
+        echo "No roles found in $TOOLS_JSON. Check the JSON structure."
+        exit 1
+    fi
 
     echo "Select your role:"
     for ((i=0; i<ROLE_COUNT; i++)); do
@@ -102,13 +143,12 @@ load_tools_and_role() {
 
     INDEX=$((SEL-1))
     SELECTED_ROLE="${ROLE_KEYS[INDEX]}"
-
-    # Tools JSON for this role (compact so it’s a single line)
     TOOLS_JSON_DATA=$(jq -c ".roles[\"$SELECTED_ROLE\"].tools" "$TOOLS_JSON")
 
+    debug "Selected role key: $SELECTED_ROLE"
+    debug "Tools JSON for role: $TOOLS_JSON_DATA"
     echo "Selected role: $SELECTED_ROLE"
 }
-
 
 # -------------------------
 # Remove old tools
@@ -118,13 +158,34 @@ remove_obsolete_tools() {
     local prev_json="$1"
     local current_tool_json="$2"
 
-    mapfile -t prev_list < <(echo "$prev_json" | jq -r '.installed_tools | keys[]')
-    mapfile -t curr_list < <(echo "$current_tool_json" | jq -r 'keys[]')
+    debug "remove_obsolete_tools: prev_json=$prev_json"
+    debug "remove_obsolete_tools: current_tool_json=$current_tool_json"
 
-    for prev in "${prev_list[@]}"; do
-        if ! printf '%s\n' "${curr_list[@]}" | grep -qx "$prev"; then
-            echo "Removing obsolete tool: $prev"
-            brew uninstall "$prev"
+    PREV_LIST=()
+    while IFS= read -r key; do
+        PREV_LIST+=( "$key" )
+    done < <(echo "$prev_json" | jq -r '.installed_tools // {} | keys[]')
+
+    CURR_LIST=()
+    while IFS= read -r key; do
+        CURR_LIST+=( "$key" )
+    done < <(echo "$current_tool_json" | jq -r 'keys[]')
+
+    for prev in "${PREV_LIST[@]}"; do
+        found=0
+        for curr in "${CURR_LIST[@]}"; do
+            if [[ "$prev" == "$curr" ]]; then
+                found=1
+                break
+            fi
+        done
+        if [[ "$found" -eq 0 ]]; then
+            if [ "$DRY_RUN" = "true" ]; then
+                echo "Would uninstall obsolete tool: $prev   (DRY RUN)"
+            else
+                echo "Uninstalling obsolete tool: $prev"
+                brew uninstall "$prev" || true
+            fi
         fi
     done
 }
@@ -136,17 +197,30 @@ remove_obsolete_tools() {
 install_or_upgrade_tools() {
     local tools_json="$1"
 
-    mapfile -t names < <(echo "$tools_json" | jq -r 'keys[]')
+    debug "install_or_upgrade_tools: tools_json=$tools_json"
 
-    for tool in "${names[@]}"; do
+    NAMES=()
+    while IFS= read -r key; do
+        NAMES+=( "$key" )
+    done < <(echo "$tools_json" | jq -r 'keys[]')
+
+    for tool in "${NAMES[@]}"; do
         VERSION=$(echo "$tools_json" | jq -r ".[\"$tool\"]")
 
         if brew list --versions "$tool" >/dev/null 2>&1; then
-            echo "$tool already installed — checking version..."
-            brew upgrade "$tool" || true
+            if [ "$DRY_RUN" = "true" ]; then
+                echo "Would upgrade $tool to $VERSION   (DRY RUN)"
+            else
+                echo "Upgrading $tool to $VERSION..."
+                brew upgrade "$tool" || true
+            fi
         else
-            echo "Installing $tool..."
-            brew install "$tool"
+            if [ "$DRY_RUN" = "true" ]; then
+                echo "Would install $tool ($VERSION)   (DRY RUN)"
+            else
+                echo "Installing $tool ($VERSION)..."
+                brew install "$tool"
+            fi
         fi
     done
 }
@@ -154,32 +228,39 @@ install_or_upgrade_tools() {
 uninstall_tools() {
     local tools_json="$1"
 
-    mapfile -t names < <(echo "$tools_json" | jq -r 'keys[]')
+    debug "uninstall_tools: tools_json=$tools_json"
 
-    for tool in "${names[@]}"; do
+    NAMES=()
+    while IFS= read -r key; do
+        NAMES+=( "$key" )
+    done < <(echo "$tools_json" | jq -r 'keys[]')
+
+    for tool in "${NAMES[@]}"; do
         if brew list --versions "$tool" >/dev/null 2>&1; then
-            echo "Uninstalling $tool"
-            brew uninstall "$tool"
+            if [ "$DRY_RUN" = "true" ]; then
+                echo "Would uninstall $tool   (DRY RUN)"
+            else
+                echo "Uninstalling $tool"
+                brew uninstall "$tool"
+            fi
         fi
     done
 }
-
 
 # -------------------------
 # Final Report
 # -------------------------
 
 final_report() {
-    local tools_json="$1"
-
-    echo "Installed tools:"
+    echo "Installed tools (real system state):"
     brew list --versions
 }
-
 
 # -------------------------
 # Main Flow
 # -------------------------
+
+debug "Script start; DRY_RUN=$DRY_RUN DEBUG=$DEBUG"
 
 ensure_brew_installed
 ensure_jq
@@ -187,53 +268,31 @@ ensure_jq
 load_tools_and_role   # sets SELECTED_ROLE and TOOLS_JSON_DATA
 
 PREVIOUS_STATE=$(get_previous_state)
+debug "PREVIOUS_STATE raw: $PREVIOUS_STATE"
 
 if [[ -n "$PREVIOUS_STATE" ]]; then
+    debug "Previous state not empty -> calling remove_obsolete_tools"
     remove_obsolete_tools "$PREVIOUS_STATE" "$TOOLS_JSON_DATA"
+else
+    debug "No previous state found; skipping obsolete removal"
 fi
 
 read -rp "Enter action (install/uninstall): " ACTION
 
 if [[ "$ACTION" == "install" ]]; then
+    debug "Action = install"
     install_or_upgrade_tools "$TOOLS_JSON_DATA"
     save_current_state "$SELECTED_ROLE" "$TOOLS_JSON_DATA"
 
 elif [[ "$ACTION" == "uninstall" ]]; then
+    debug "Action = uninstall"
     uninstall_tools "$TOOLS_JSON_DATA"
     save_current_state "" "{}"
+
 else
     echo "Invalid action."
     exit 1
 fi
 
-final_report "$TOOLS_JSON_DATA"
+final_report
 check_and_delete_tools_json
-
-
-#SELECTED_ROLE="${RESULT[0]}"
-#TOOLS_JSON_DATA="${RESULT[1]}"
-#
-#PREVIOUS_STATE=$(get_previous_state)
-#
-#if [[ -n "$PREVIOUS_STATE" ]]; then
-#    remove_obsolete_tools "$(echo "$PREVIOUS_STATE")" "$TOOLS_JSON_DATA"
-#fi
-#
-#read -rp "Enter action (install/uninstall): " ACTION
-#
-#if [[ "$ACTION" == "install" ]]; then
-#    install_or_upgrade_tools "$TOOLS_JSON_DATA"
-#    INSTALLED="$(echo "$TOOLS_JSON_DATA")"
-#    save_current_state "$SELECTED_ROLE" "$INSTALLED"
-#
-#elif [[ "$ACTION" == "uninstall" ]]; then
-#    uninstall_tools "$TOOLS_JSON_DATA"
-#    save_current_state "" "{}"
-#else
-#    echo "Invalid action."
-#    exit 1
-#fi
-#
-#final_report "$TOOLS_JSON_DATA"
-#
-#check_and_delete_tools_json
