@@ -161,25 +161,35 @@ remove_obsolete_tools() {
     debug "remove_obsolete_tools: prev_json=$prev_json"
     debug "remove_obsolete_tools: current_tool_json=$current_tool_json"
 
-    PREV_LIST=()
-    while IFS= read -r key; do
-        PREV_LIST+=( "$key" )
-    done < <(echo "$prev_json" | jq -r '.installed_tools // {} | keys[]')
+    # Always initialize arrays so set -u is happy
+    local PREV_LIST=()
+    local CURR_LIST=()
 
-    CURR_LIST=()
+    # previous installed tools keys (may be empty)
     while IFS= read -r key; do
-        CURR_LIST+=( "$key" )
-    done < <(echo "$current_tool_json" | jq -r 'keys[]')
+        [ -n "$key" ] && PREV_LIST+=( "$key" )
+    done < <(echo "$prev_json" | jq -r '.installed_tools // {} | keys[]?')
+
+    # current role tools keys
+    while IFS= read -r key; do
+        [ -n "$key" ] && CURR_LIST+=( "$key" )
+    done < <(echo "$current_tool_json" | jq -r 'keys[]?')
+
+    if [ "${#PREV_LIST[@]}" -eq 0 ]; then
+        debug "No previously recorded tools to check for removal."
+        return
+    fi
 
     for prev in "${PREV_LIST[@]}"; do
-        found=0
+        local found=0
         for curr in "${CURR_LIST[@]}"; do
             if [[ "$prev" == "$curr" ]]; then
                 found=1
                 break
             fi
         done
-        if [[ "$found" -eq 0 ]]; then
+
+        if [ "$found" -eq 0 ]; then
             if [ "$DRY_RUN" = "true" ]; then
                 echo "Would uninstall obsolete tool: $prev   (DRY RUN)"
             else
@@ -189,6 +199,7 @@ remove_obsolete_tools() {
         fi
     done
 }
+
 
 # -------------------------
 # Install / upgrade tools
@@ -230,22 +241,48 @@ uninstall_tools() {
 
     debug "uninstall_tools: tools_json=$tools_json"
 
+    # Collect tool names from JSON
     NAMES=()
     while IFS= read -r key; do
         NAMES+=( "$key" )
     done < <(echo "$tools_json" | jq -r 'keys[]')
 
+    # Filter to only those actually installed
+    INSTALLED_TO_REMOVE=()
     for tool in "${NAMES[@]}"; do
         if brew list --versions "$tool" >/dev/null 2>&1; then
-            if [ "$DRY_RUN" = "true" ]; then
-                echo "Would uninstall $tool   (DRY RUN)"
-            else
-                echo "Uninstalling $tool"
-                brew uninstall "$tool"
+            INSTALLED_TO_REMOVE+=( "$tool" )
+        fi
+    done
+
+    if [ "${#INSTALLED_TO_REMOVE[@]}" -eq 0 ]; then
+        echo "No tools from role '$SELECTED_ROLE' are currently installed via Homebrew."
+        return
+    fi
+
+    echo "The following Homebrew packages from role '$SELECTED_ROLE' will be uninstalled:"
+    for t in "${INSTALLED_TO_REMOVE[@]}"; do
+        echo "  - $t"
+    done
+
+    read -rp "Proceed with uninstall? (y/N): " CONFIRM
+    if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
+        echo "Uninstall cancelled."
+        return
+    fi
+
+    for tool in "${INSTALLED_TO_REMOVE[@]}"; do
+        if [ "$DRY_RUN" = "true" ]; then
+            echo "Would uninstall $tool   (DRY RUN)"
+        else
+            echo "Uninstalling $tool"
+            if ! brew uninstall "$tool"; then
+                echo "Warning: failed to uninstall $tool" >&2
             fi
         fi
     done
 }
+
 
 # -------------------------
 # Final Report
