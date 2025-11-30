@@ -111,7 +111,7 @@ load_tools_and_role() {
     if [[ ! -f "$TOOLS_JSON" ]]; then
         echo "Downloading tools.json..."
         curl -s -o "$TOOLS_JSON" \
-            https://raw.githubusercontent.com/neurabytes/nb-local-setup/feature/mac-installation/windows/bin/tools.json
+            https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/refs/heads/feature/mac-installation/mac/bin/tools.json
     fi
 
     ROLE_KEYS=()
