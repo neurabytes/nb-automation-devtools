@@ -21,8 +21,11 @@ jobs:
       - name: Install requests
         run: pip install requests
 
-      - name: Update tools.json
+      - name: Update Windows tools.json
         run: python .github/workflows/update_tools.py
+
+      - name: Update macOS tools.json
+        run: python .github/workflows/update_tools_macos.py
 
       - name: Set branch name
         id: branch_name

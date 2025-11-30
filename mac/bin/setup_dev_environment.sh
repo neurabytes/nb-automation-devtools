@@ -6,7 +6,7 @@ TOOLS_JSON="tools.json"
 STATE_DIR="/Library/Application Support/nb-automation"
 STATE_FILE="$STATE_DIR/installed_tools_state.json"
 
-DRY_RUN=true   # <- set to false later when you want real installs
+DRY_RUN=false   # <- set to false later when you want real installs
 DEBUG=true     # <- set to false to quiet debug logs
 
 debug() {
