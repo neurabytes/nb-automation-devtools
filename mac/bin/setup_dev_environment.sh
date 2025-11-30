@@ -1,74 +1,203 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Check if Homebrew is installed, install if not
-if ! command -v brew &>/dev/null; then
-    echo "Installing Homebrew..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+TOOLS_JSON="tools.json"
+STATE_DIR="/Library/Application Support/nb-automation"
+STATE_FILE="$STATE_DIR/installed_tools_state.json"
+
+
+# -------------------------
+# Helpers
+# -------------------------
+
+ensure_jq() {
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "Installing jq..."
+        brew install jq
+    fi
+}
+
+check_and_delete_tools_json() {
+    if [[ -f "$TOOLS_JSON" ]]; then
+        echo "tools.json exists. Deleting."
+        rm -f "$TOOLS_JSON"
+    else
+        echo "tools.json does not exist."
+    fi
+}
+
+ensure_state_dir() {
+    if [[ ! -d "$STATE_DIR" ]]; then
+        sudo mkdir -p "$STATE_DIR"
+        sudo chmod 777 "$STATE_DIR"
+    fi
+}
+
+get_previous_state() {
+    ensure_state_dir
+    if [[ -f "$STATE_FILE" ]]; then
+        cat "$STATE_FILE"
+    else
+        echo ""
+    fi
+}
+
+save_current_state() {
+    local role="$1"
+    local installed_tools_json="$2"
+
+    ensure_state_dir
+
+    cat <<EOF | sudo tee "$STATE_FILE" >/dev/null
+{
+  "last_role": "$role",
+  "last_install_date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+  "installed_tools": $installed_tools_json
+}
+EOF
+
+    echo "State saved to $STATE_FILE"
+}
+
+ensure_brew_installed() {
+    if ! command -v brew >/dev/null 2>&1; then
+        echo "Homebrew missing — installing..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+}
+
+
+# -------------------------
+# Load role + tools
+# -------------------------
+
+load_tools_and_role() {
+    if [[ ! -f "$TOOLS_JSON" ]]; then
+        echo "Downloading tools.json..."
+        curl -s -o "$TOOLS_JSON" \
+            https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/macos/bin/tools.json
+    fi
+
+    ROLE_COUNT=$(jq '.roles | length' "$TOOLS_JSON")
+
+    echo "Select your role:"
+    for ((i=0; i<ROLE_COUNT; i++)); do
+        jq -r ".roles[$i].description" "$TOOLS_JSON" | sed "s/^/$((i+1)). /"
+    done
+
+    while true; do
+        read -rp "Enter choice (1-$ROLE_COUNT): " SEL
+        if [[ "$SEL" =~ ^[0-9]+$ ]] && (( SEL >= 1 && SEL <= ROLE_COUNT )); then
+            break
+        fi
+    done
+
+    INDEX=$((SEL-1))
+    SELECTED_ROLE=$(jq -r ".roles[$INDEX].name" "$TOOLS_JSON")
+    TOOLS=$(jq -r ".roles[$INDEX].tools" "$TOOLS_JSON")
+
+    echo "$SELECTED_ROLE"
+    echo "$TOOLS"
+}
+
+# -------------------------
+# Remove old tools
+# -------------------------
+
+remove_obsolete_tools() {
+    local prev_json="$1"
+    local current_tool_json="$2"
+
+    mapfile -t prev_list < <(echo "$prev_json" | jq -r '.installed_tools | keys[]')
+    mapfile -t curr_list < <(echo "$current_tool_json" | jq -r 'keys[]')
+
+    for prev in "${prev_list[@]}"; do
+        if ! printf '%s\n' "${curr_list[@]}" | grep -qx "$prev"; then
+            echo "Removing obsolete tool: $prev"
+            brew uninstall "$prev"
+        fi
+    done
+}
+
+# -------------------------
+# Install / upgrade tools
+# -------------------------
+
+install_or_upgrade_tools() {
+    local tools_json="$1"
+
+    mapfile -t names < <(echo "$tools_json" | jq -r 'keys[]')
+
+    for tool in "${names[@]}"; do
+        VERSION=$(echo "$tools_json" | jq -r ".[\"$tool\"]")
+
+        if brew list --versions "$tool" >/dev/null 2>&1; then
+            echo "$tool already installed — checking version..."
+            brew upgrade "$tool" || true
+        else
+            echo "Installing $tool..."
+            brew install "$tool"
+        fi
+    done
+}
+
+uninstall_tools() {
+    local tools_json="$1"
+
+    mapfile -t names < <(echo "$tools_json" | jq -r 'keys[]')
+
+    for tool in "${names[@]}"; do
+        if brew list --versions "$tool" >/dev/null 2>&1; then
+            echo "Uninstalling $tool"
+            brew uninstall "$tool"
+        fi
+    done
+}
+
+
+# -------------------------
+# Final Report
+# -------------------------
+
+final_report() {
+    local tools_json="$1"
+
+    echo "Installed tools:"
+    brew list --versions
+}
+
+
+# -------------------------
+# Main Flow
+# -------------------------
+
+ensure_brew_installed
+ensure_jq
+
+readarray -t RESULT < <(load_tools_and_role)
+SELECTED_ROLE="${RESULT[0]}"
+TOOLS_JSON_DATA="${RESULT[1]}"
+
+PREVIOUS_STATE=$(get_previous_state)
+
+if [[ -n "$PREVIOUS_STATE" ]]; then
+    remove_obsolete_tools "$(echo "$PREVIOUS_STATE")" "$TOOLS_JSON_DATA"
 fi
 
-# Define a list of tools to install or upgrade
-declare -A tools=(
-    [git]="2.42.0"
-    [intellij-idea-ce]="2023.2.3" # IntelliJ IDEA Community Edition
-    [r]="4.3.1"
-    [meld]="3.22.0"
-    [wget]="6.1.2" # Using wget as an alternative to WinSCP
-    [postman]="10.18.10"
-    [terraform]="1.6.2"
-    [awscli]="2.13.32"
-    [azure-cli]="2.53.1"
-    [openjdk]="17.0.2"
-    [maven]="3.9.5"
-    [scala]="2.11.4"
-    [node]="21.1.0"
-    [gnupg]="4.2.0" # Gpg4win alternative
-    [sqlite]="3.43.2"
-    [dbeaver-community]="23.2.1" # DBeaver Community Edition
-    # No direct equivalents for 'powerbi' and 'tableau-public' on macOS via Homebrew
-)
+read -rp "Enter action (install/uninstall): " ACTION
 
-# Function to install or upgrade a tool
-install_or_upgrade() {
-    if brew ls --versions "$1" > /dev/null; then
-        echo "Upgrading $1..."
-        brew upgrade "$1"
-    else
-        echo "Installing $1..."
-        brew install "$1"
-    fi
-}
+if [[ "$ACTION" == "install" ]]; then
+    install_or_upgrade_tools "$TOOLS_JSON_DATA"
+    INSTALLED="$(echo "$TOOLS_JSON_DATA")"
+    save_current_state "$SELECTED_ROLE" "$INSTALLED"
 
-# Function to uninstall a tool
-uninstall() {
-    if brew ls --versions "$1" > /dev/null; then
-        echo "Uninstalling $1..."
-        brew uninstall "$1"
-    else
-        echo "$1 is not installed."
-    fi
-}
+elif [[ "$ACTION" == "uninstall" ]]; then
+    uninstall_tools "$TOOLS_JSON_DATA"
+    save_current_state "" "{}"
+else
+    echo "Invalid action."
+    exit 1
+fi
 
-# Prompt user for action
-read -p "Enter desired action (install, upgrade, uninstall): " action
+final_report "$TOOLS_JSON_DATA"
 
-# Process the action
-case $action in
-    install)
-        for tool in "${!tools[@]}"; do
-            install_or_upgrade "$tool"
-        done
-        ;;
-    uninstall)
-        for tool in "${!tools[@]}"; do
-            uninstall "$tool"
-        done
-        ;;
-    *)
-        echo "Invalid action specified. Please enter either 'install' or 'uninstall'."
-        exit 1
-        ;;
-esac
-
-# Report on installed tools
-echo "Installed tools:"
-brew list
+check_and_delete_tools_json
