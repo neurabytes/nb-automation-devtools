@@ -13,6 +13,8 @@ ensure_jq() {
     if ! command -v jq >/dev/null 2>&1; then
         echo "Installing jq..."
         brew install jq
+    else
+        echo "JQ is already installed."
     fi
 }
 
@@ -58,30 +60,37 @@ EOF
     echo "State saved to $STATE_FILE"
 }
 
-ensure_brew_installed() {
-    if ! command -v brew >/dev/null 2>&1; then
-        echo "Homebrew missing — installing..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    fi
-}
 
 
 # -------------------------
 # Load role + tools
 # -------------------------
 
+ensure_brew_installed() {
+    if ! command -v brew >/dev/null 2>&1; then
+        echo "Homebrew missing — installing..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    else
+        echo "Homebrew is already installed."
+    fi
+}
+
 load_tools_and_role() {
     if [[ ! -f "$TOOLS_JSON" ]]; then
         echo "Downloading tools.json..."
         curl -s -o "$TOOLS_JSON" \
-            https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/macos/bin/tools.json
+            https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/tools.json
     fi
 
-    ROLE_COUNT=$(jq '.roles | length' "$TOOLS_JSON")
+    # Get role keys as an array
+    mapfile -t ROLE_KEYS < <(jq -r '.roles | keys[]' "$TOOLS_JSON")
+    ROLE_COUNT=${#ROLE_KEYS[@]}
 
     echo "Select your role:"
     for ((i=0; i<ROLE_COUNT; i++)); do
-        jq -r ".roles[$i].description" "$TOOLS_JSON" | sed "s/^/$((i+1)). /"
+        role="${ROLE_KEYS[i]}"
+        desc=$(jq -r ".roles[\"$role\"].description" "$TOOLS_JSON")
+        printf "%d. %s\n" "$((i+1))" "$desc"
     done
 
     while true; do
@@ -92,12 +101,14 @@ load_tools_and_role() {
     done
 
     INDEX=$((SEL-1))
-    SELECTED_ROLE=$(jq -r ".roles[$INDEX].name" "$TOOLS_JSON")
-    TOOLS=$(jq -r ".roles[$INDEX].tools" "$TOOLS_JSON")
+    SELECTED_ROLE="${ROLE_KEYS[INDEX]}"
 
-    echo "$SELECTED_ROLE"
-    echo "$TOOLS"
+    # Tools JSON for this role (compact so it’s a single line)
+    TOOLS_JSON_DATA=$(jq -c ".roles[\"$SELECTED_ROLE\"].tools" "$TOOLS_JSON")
+
+    echo "Selected role: $SELECTED_ROLE"
 }
+
 
 # -------------------------
 # Remove old tools
@@ -173,22 +184,19 @@ final_report() {
 ensure_brew_installed
 ensure_jq
 
-readarray -t RESULT < <(load_tools_and_role)
-SELECTED_ROLE="${RESULT[0]}"
-TOOLS_JSON_DATA="${RESULT[1]}"
+load_tools_and_role   # sets SELECTED_ROLE and TOOLS_JSON_DATA
 
 PREVIOUS_STATE=$(get_previous_state)
 
 if [[ -n "$PREVIOUS_STATE" ]]; then
-    remove_obsolete_tools "$(echo "$PREVIOUS_STATE")" "$TOOLS_JSON_DATA"
+    remove_obsolete_tools "$PREVIOUS_STATE" "$TOOLS_JSON_DATA"
 fi
 
 read -rp "Enter action (install/uninstall): " ACTION
 
 if [[ "$ACTION" == "install" ]]; then
     install_or_upgrade_tools "$TOOLS_JSON_DATA"
-    INSTALLED="$(echo "$TOOLS_JSON_DATA")"
-    save_current_state "$SELECTED_ROLE" "$INSTALLED"
+    save_current_state "$SELECTED_ROLE" "$TOOLS_JSON_DATA"
 
 elif [[ "$ACTION" == "uninstall" ]]; then
     uninstall_tools "$TOOLS_JSON_DATA"
@@ -199,5 +207,33 @@ else
 fi
 
 final_report "$TOOLS_JSON_DATA"
-
 check_and_delete_tools_json
+
+
+#SELECTED_ROLE="${RESULT[0]}"
+#TOOLS_JSON_DATA="${RESULT[1]}"
+#
+#PREVIOUS_STATE=$(get_previous_state)
+#
+#if [[ -n "$PREVIOUS_STATE" ]]; then
+#    remove_obsolete_tools "$(echo "$PREVIOUS_STATE")" "$TOOLS_JSON_DATA"
+#fi
+#
+#read -rp "Enter action (install/uninstall): " ACTION
+#
+#if [[ "$ACTION" == "install" ]]; then
+#    install_or_upgrade_tools "$TOOLS_JSON_DATA"
+#    INSTALLED="$(echo "$TOOLS_JSON_DATA")"
+#    save_current_state "$SELECTED_ROLE" "$INSTALLED"
+#
+#elif [[ "$ACTION" == "uninstall" ]]; then
+#    uninstall_tools "$TOOLS_JSON_DATA"
+#    save_current_state "" "{}"
+#else
+#    echo "Invalid action."
+#    exit 1
+#fi
+#
+#final_report "$TOOLS_JSON_DATA"
+#
+#check_and_delete_tools_json
