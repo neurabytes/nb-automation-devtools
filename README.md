@@ -120,7 +120,7 @@ Installs Docker Desktop using Homebrew Cask.
 **Run directly from GitHub:**
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/Setup-DockerEnvironment-mac.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_docker_environment.sh)"
 ```
 
 ## 2.6 Configure Git Commit Signing (GPG)
