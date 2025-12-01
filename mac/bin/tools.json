@@ -24,7 +24,9 @@
         "lm-studio": "0.3.29",
         "temurin17": "17.0.14.7",
         "openjdk": "25.0.0.1",
-        "gradle": "9.1.0"
+        "gradle": "9.1.0",
+        "git-credential-manager": "2.6.1",
+        "pyenv": "2.6.13"
       }
     },
     "student": {
@@ -69,7 +71,8 @@
         "dbeaver-community": "25.2.4",
         "postman": "11.46.6",
         "cursor": "2.0.69",
-        "git-credential-manager": "2.6.1"
+        "git-credential-manager": "2.6.1",
+        "pyenv": "2.6.13"
       }
     }
   },

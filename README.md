@@ -74,8 +74,63 @@ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.
 
 ## 2. Getting Started [Mac]
 
-This section is pending and will be updated soon.
+### 2.1 Overview
+On macOS, setup is performed using Homebrew-based scripts that install and configure the core developer tools.
 
+Scripts include:
+
+- **setup_dev_environment.sh** – Installs or updates common developer tools via Homebrew
+- **setup_pyenv.sh** – Installs pyenv, Python, pipenv, and pre-commit
+- **setup_docker_environment.sh** – Installs Docker Desktop for Mac
+- **setup_git_gpg.sh** – Installs GPG, generates keys, and configures Git signing
+
+---
+
+### 2.2 Prerequisites
+- macOS Ventura or later
+- Command Line Tools for Xcode (`xcode-select --install`)
+- Homebrew (auto-installed if missing)
+
+---
+
+### 2.3 Install Development Tools
+
+This script ensures Homebrew is installed, then installs/updates developer tools defined in the script.
+
+**Run directly from GitHub:**
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_dev_environment.sh)"
+```
+
+### 2.4 Install Python using pyenv
+
+Installs `pyenv`, Python 3.11.x, `pipenv`, and `pre-commit`.
+
+**Run directly from GitHub:**
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_pyenv.sh)"
+```
+
+
+### 2.5 Install Docker Desktop
+Installs Docker Desktop using Homebrew Cask.
+
+**Run directly from GitHub:**
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_docker_environment.sh)"
+```
+
+### 2.6 Configure Git Commit Signing (GPG)
+Installs GPG and configures Git to sign commits and tags.
+
+**Run directly from GitHub:**
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_git_gpg.sh)"
+```
 
 ##  3. Security Note
 This script will request for Execution Policy Change for the session. Please make sure that you close the admin panel once the script is completed. Never execute scripts from untrusted sources on same session.
