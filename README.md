@@ -123,7 +123,7 @@ Installs Docker Desktop using Homebrew Cask.
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_docker_environment.sh)"
 ```
 
-## 2.6 Configure Git Commit Signing (GPG)
+### 2.6 Configure Git Commit Signing (GPG)
 Installs GPG and configures Git to sign commits and tags.
 
 **Run directly from GitHub:**
