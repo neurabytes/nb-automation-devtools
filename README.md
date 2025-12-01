@@ -114,7 +114,7 @@ Installs `pyenv`, Python 3.11.x, `pipenv`, and `pre-commit`.
 ```
 
 
-## 2.5 Install Docker Desktop
+### 2.5 Install Docker Desktop
 Installs Docker Desktop using Homebrew Cask.
 
 **Run directly from GitHub:**
