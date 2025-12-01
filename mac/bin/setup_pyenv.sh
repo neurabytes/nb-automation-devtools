@@ -6,11 +6,6 @@ if [ "$(id -u)" -eq 0 ]; then
   exit 1
 fi
 
-# Install pyenv via Homebrew
-if ! command -v pyenv >/dev/null 2>&1; then
-  brew install pyenv
-fi
-
 # Initialize pyenv for this session
 eval "$(pyenv init -)"
 
