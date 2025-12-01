@@ -79,7 +79,7 @@ On macOS, setup is performed using Homebrew-based scripts that install and confi
 
 Scripts include:
 
-- **Setup-DevEnvironment-mac.sh** – Installs or updates common developer tools via Homebrew
+- **setup_dev_environment.sh** – Installs or updates common developer tools via Homebrew
 - **Setup-PyEnvMac.sh** – Installs pyenv, Python, pipenv, and pre-commit
 - **setup_docker_environment.sh** – Installs Docker Desktop for Mac
 - **setup_git_gpg.sh** – Installs GPG, generates keys, and configures Git signing
