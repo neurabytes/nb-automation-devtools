@@ -100,7 +100,7 @@ This script ensures Homebrew is installed, then installs/updates developer tools
 **Run directly from GitHub:**
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/Setup-DevEnvironment-mac.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_dev_environment.sh)"
 ```
 
 ### 2.4 Install Python using pyenv
