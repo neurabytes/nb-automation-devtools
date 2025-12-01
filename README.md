@@ -103,7 +103,7 @@ This script ensures Homebrew is installed, then installs/updates developer tools
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/Setup-DevEnvironment-mac.sh)"
 ```
 
-## 2.4 Install Python using pyenv
+### 2.4 Install Python using pyenv
 
 Installs `pyenv`, Python 3.11.x, `pipenv`, and `pre-commit`.
 
