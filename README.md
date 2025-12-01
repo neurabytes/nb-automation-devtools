@@ -110,7 +110,7 @@ Installs `pyenv`, Python 3.11.x, `pipenv`, and `pre-commit`.
 **Run directly from GitHub:**
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/Setup-PyEnvMac.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_pyenv.sh)"
 ```
 
 
