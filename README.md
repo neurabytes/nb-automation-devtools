@@ -82,7 +82,7 @@ Scripts include:
 - **Setup-DevEnvironment-mac.sh** – Installs or updates common developer tools via Homebrew
 - **Setup-PyEnvMac.sh** – Installs pyenv, Python, pipenv, and pre-commit
 - **Setup-DockerEnvironment-mac.sh** – Installs Docker Desktop for Mac
-- **Setup-GitGPG-mac.sh** – Installs GPG, generates keys, and configures Git signing
+- **setup_git_gpg.sh** – Installs GPG, generates keys, and configures Git signing
 
 ---
 
