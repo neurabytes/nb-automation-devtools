@@ -68,7 +68,8 @@
         "sqlite": "3.51.0",
         "dbeaver-community": "25.2.4",
         "postman": "11.46.6",
-        "cursor": "2.0.69"
+        "cursor": "2.0.69",
+        "git-credential-manager": "2.6.1"
       }
     }
   },
