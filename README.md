@@ -128,8 +128,7 @@ Installs GPG and configures Git to sign commits and tags.
 
 **Run directly from GitHub:**
 
-```
-bash
+```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_git_gpg.sh)"
 ```
 
