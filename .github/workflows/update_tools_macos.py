@@ -47,7 +47,7 @@ def update_macos_tools() -> None:
     Update macOS tools.json (mac/bin/tools.json) with latest versions from Homebrew.
     """
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-    tools_path = os.path.join(repo_root, "macos", "bin", "tools.json")
+    tools_path = os.path.join(repo_root, "mac", "bin", "tools.json")
 
     if not os.path.exists(tools_path):
         raise FileNotFoundError(f"macOS tools.json not found at: {tools_path}")
