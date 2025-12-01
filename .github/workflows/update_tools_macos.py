@@ -69,6 +69,7 @@ def update_macos_tools() -> None:
 
     with open(tools_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
+        f.write('\n')
 
     print(f"macOS tools updated successfully in {tools_path}")
 
