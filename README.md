@@ -130,7 +130,7 @@ Installs GPG and configures Git to sign commits and tags.
 
 ```
 bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/Setup-GitGPG-mac.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_git_gpg.sh)"
 ```
 
 ##  3. Security Note
