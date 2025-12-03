@@ -80,11 +80,13 @@ export PIP_BREAK_SYSTEM_PACKAGES=1
 
 "$PYENV_PYTHON" -m pip install --upgrade pip
 "$PYENV_PYTHON" -m pip install pipenv pre-commit
+
+echo "pip / pipenv / pre-commit installed using: $PYENV_PYTHON"
+
+echo "Rehashing pyenv shims."
 pyenv rehash
 command -v pipenv || true
 pipenv --version || true
-
-echo "pip / pipenv / pre-commit installed using: $PYENV_PYTHON"
 
 # -------------------------
 # Persist pyenv init into rc file (idempotent)
