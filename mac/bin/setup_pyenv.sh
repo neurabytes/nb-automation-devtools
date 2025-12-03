@@ -70,6 +70,7 @@ command -v python3 || true
 python --version || true
 python3 --version || true
 
+echo "Installing pip, pipenv, and pre-commit."
 # -------------------------
 # Use pyenv Python for pip/pipenv/pre-commit
 # -------------------------
@@ -79,6 +80,9 @@ export PIP_BREAK_SYSTEM_PACKAGES=1
 
 "$PYENV_PYTHON" -m pip install --upgrade pip
 "$PYENV_PYTHON" -m pip install pipenv pre-commit
+pyenv rehash
+command -v pipenv || true
+pipenv --version || true
 
 echo "pip / pipenv / pre-commit installed using: $PYENV_PYTHON"
 
