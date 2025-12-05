@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PYTHON_VERSION="3.11.6"
-CREDENTIALS_URL="https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/setup_credentials.py"
+CREDENTIALS_URL="https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/devtools/setup_credentials.py"
 
 if [ "$(id -u)" -eq 0 ]; then
   echo "Do not run this as root/sudo."
