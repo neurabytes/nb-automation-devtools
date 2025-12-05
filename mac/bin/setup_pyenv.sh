@@ -2,6 +2,7 @@
 set -euo pipefail
 
 PYTHON_VERSION="3.11.6"
+CREDENTIALS_URL="https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/setup_credentials.py"
 
 if [ "$(id -u)" -eq 0 ]; then
   echo "Do not run this as root/sudo."
@@ -74,7 +75,6 @@ echo "Installing pip, pipenv, and pre-commit."
 # -------------------------
 # Use pyenv Python for pip/pipenv/pre-commit
 # -------------------------
-# Ensure we are using the pyenv-managed python
 PYENV_PYTHON="$(pyenv which python)"
 export PIP_BREAK_SYSTEM_PACKAGES=1
 
@@ -87,6 +87,31 @@ echo "Rehashing pyenv shims."
 pyenv rehash
 command -v pipenv || true
 pipenv --version || true
+
+# -------------------------
+# OPTIONAL: setup credentials (same URL as Windows script)
+# -------------------------
+read -r -p "Do you also want to set up the credentials now? (yes/no) " ANSWER
+case "$ANSWER" in
+  yes|y|Y)
+    echo "Downloading credentials setup script..."
+    TMP_FILE="$(mktemp -t nb_setup_credentials.XXXXXX.py)"
+
+    if curl -fsSL "$CREDENTIALS_URL" -o "$TMP_FILE"; then
+      echo "Running credentials setup script with $PYENV_PYTHON ..."
+      if ! "$PYENV_PYTHON" "$TMP_FILE"; then
+        echo "Error: credentials setup script failed." >&2
+      fi
+    else
+      echo "Error: failed to download credentials setup script from $CREDENTIALS_URL" >&2
+    fi
+
+    rm -f "$TMP_FILE"
+    ;;
+  *)
+    echo "Skipping credentials setup."
+    ;;
+esac
 
 # -------------------------
 # Persist pyenv init into rc file (idempotent)

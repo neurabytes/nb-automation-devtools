@@ -320,12 +320,14 @@ if [[ "$ACTION" == "install" ]]; then
     debug "Action = install"
     install_or_upgrade_tools "$TOOLS_JSON_DATA"
     save_current_state "$SELECTED_ROLE" "$TOOLS_JSON_DATA"
-
+    defaults write com.apple.Finder AppleShowAllFiles -bool true
+    killall Finder
 elif [[ "$ACTION" == "uninstall" ]]; then
     debug "Action = uninstall"
     uninstall_tools "$TOOLS_JSON_DATA"
     save_current_state "" "{}"
-
+    defaults write com.apple.Finder AppleShowAllFiles -bool false
+    killall Finder
 else
     echo "Invalid action."
     exit 1
