@@ -361,6 +361,103 @@ function CanInstallDocker {
     return $canInstall
 }
 
+
+function UninstallDockerDesktop {
+    Write-Host "Starting Docker Desktop uninstallation..." -ForegroundColor Cyan
+
+    # -------------------------
+    # 1. Try Chocolatey uninstall
+    # -------------------------
+    $canUseChoco = $false
+    if (Get-Command choco -ErrorAction SilentlyContinue) {
+        $dockerPkg = choco list --local-only | Select-String "docker-desktop"
+        if ($dockerPkg) {
+            $canUseChoco = $true
+        }
+    }
+
+    if ($canUseChoco) {
+        $consent = Read-Host "Docker Desktop appears to be installed via Chocolatey. Uninstall it now? (yes/no)"
+        if ($consent -ne "yes") {
+            Write-Host "Uninstall cancelled by user." -ForegroundColor Yellow
+            return
+        }
+
+        try {
+            Write-Host "Uninstalling Docker Desktop via Chocolatey..."
+            choco uninstall docker-desktop -y
+            Write-Host "Docker Desktop has been uninstalled via Chocolatey." -ForegroundColor Green
+        } catch {
+            Write-Host "Failed to uninstall Docker Desktop via Chocolatey: $_" -ForegroundColor Red
+            return
+        }
+    }
+    else {
+        # -------------------------
+        # 2. Fallback: Installer-based CLI uninstall
+        #    (official documented method)
+        # -------------------------
+        $installerPath = "C:\Program Files\Docker\Docker\Docker Desktop Installer.exe"
+
+        if (-not (Test-Path $installerPath)) {
+            Write-Host "Docker Desktop does not appear to be installed via Chocolatey," -ForegroundColor Yellow
+            Write-Host "and the Docker Desktop installer was not found at:" -ForegroundColor Yellow
+            Write-Host "  $installerPath" -ForegroundColor Yellow
+            Write-Host "Uninstall cannot continue automatically. Please uninstall Docker Desktop via Settings > Apps manually." -ForegroundColor Red
+            return
+        }
+
+        $consent = Read-Host "Uninstall Docker Desktop using '$installerPath uninstall'? (yes/no)"
+        if ($consent -ne "yes") {
+            Write-Host "Uninstall cancelled by user." -ForegroundColor Yellow
+            return
+        }
+
+        try {
+            Write-Host "Launching Docker Desktop installer to uninstall..." -ForegroundColor Cyan
+            Start-Process -FilePath $installerPath -ArgumentList "uninstall" -Wait
+            Write-Host "Docker Desktop uninstall process has completed." -ForegroundColor Green
+        } catch {
+            Write-Host "Failed to run Docker Desktop uninstaller: $_" -ForegroundColor Red
+            return
+        }
+    }
+
+    # -------------------------
+    # 3. Optional: clean up leftover data
+    #    (containers/images/volumes/config WILL be removed)
+    # -------------------------
+    $cleanupConsent = Read-Host "Do you want to remove Docker data directories (images, containers, configs)? This is destructive. (yes/no)"
+    if ($cleanupConsent -ne "yes") {
+        Write-Host "Skipping Docker data cleanup." -ForegroundColor Yellow
+        return
+    }
+
+    $pathsToRemove = @(
+        "C:\ProgramData\Docker",
+        "C:\ProgramData\DockerDesktop",
+        "C:\Program Files\Docker",
+        (Join-Path $env:LOCALAPPDATA "Docker"),
+        (Join-Path $env:APPDATA "Docker"),
+        (Join-Path $env:APPDATA "Docker Desktop"),
+        (Join-Path $env:USERPROFILE ".docker")
+    )
+
+    foreach ($path in $pathsToRemove) {
+        if (Test-Path $path) {
+            try {
+                Write-Host "Removing: $path"
+                Remove-Item -Recurse -Force $path
+            } catch {
+                Write-Host "Failed to remove $path : $_" -ForegroundColor Yellow
+            }
+        }
+    }
+
+    Write-Host "Docker Desktop and associated data have been removed (where possible)." -ForegroundColor Green
+}
+
+
 function InstallOrUninstallDockerAndDependencies {
     $canInstall = CanInstallDocker
 
