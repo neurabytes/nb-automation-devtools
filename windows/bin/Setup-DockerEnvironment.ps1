@@ -1,6 +1,8 @@
 # Function to check if running as an administrator
 function Test-IsAdmin {
-    $admin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+    $admin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+        [Security.Principal.WindowsBuiltInRole] "Administrator"
+    )
     return $admin
 }
 
@@ -9,7 +11,6 @@ if (-not (Test-IsAdmin)) {
     Write-Host "Please run this script as an Administrator!" -ForegroundColor Red
     return
 }
-
 
 function CheckWindowsEdition {
     # Initialize variable for Windows edition
@@ -43,9 +44,9 @@ function CheckWindowsEdition {
     }
 }
 
-
 function CheckHyperVAvailability {
-    $hyperVStates = Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq 'Microsoft-Hyper-V' -or $_.FeatureName -eq 'Microsoft-Hyper-V-All' }
+    $hyperVStates = Get-WindowsOptionalFeature -Online |
+        Where-Object { $_.FeatureName -eq 'Microsoft-Hyper-V' -or $_.FeatureName -eq 'Microsoft-Hyper-V-All' }
 
     if (-not $hyperVStates) {
         return $false, "We couldn't determine the Hyper-V status on your system."
@@ -60,7 +61,6 @@ function CheckHyperVAvailability {
     }
 }
 
-
 function CheckVirtualizationEnabled {
     $virtualizationEnabled = (Get-ComputerInfo).HyperVisorPresent
 
@@ -70,7 +70,6 @@ function CheckVirtualizationEnabled {
         return $false, "Hardware-assisted virtualization is not enabled. Please restart your computer, enter BIOS/UEFI settings, and enable virtualization. Consult your computer's manual or manufacturer for guidance."
     }
 }
-
 
 function CheckWSL2Supported {
     $osVersion = [System.Environment]::OSVersion.Version
@@ -83,7 +82,6 @@ function CheckWSL2Supported {
     return $true, $message
 }
 
-
 function CheckWSLInstalled {
     $wslFeature = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
 
@@ -93,7 +91,6 @@ function CheckWSLInstalled {
 
     return $false, "WSL is not installed."
 }
-
 
 function EnableHyperVWithConsent {
     # Get user's consent
@@ -112,7 +109,6 @@ function EnableHyperVWithConsent {
     }
 }
 
-
 function InstallWSLWithConsent {
     $IsWSLInstalled, $isWSLInstallReason = CheckWSLInstalled
 
@@ -130,29 +126,29 @@ function InstallWSLWithConsent {
             # as enabling WSL often requires a restart.
             # Once restarted, you can then proceed to install a Linux distribution.
             Write-Host "WSL installation initiated. Please follow the prompts. Restart your computer if necessary."
-
         } else {
             Write-Host "WSL installation aborted by the user."
         }
     } else {
-        Write-Host "WSL is already installed."\
+        Write-Host "WSL is already installed." -ForegroundColor Green
+
         # ✅ Try to update WSL right away
         try {
             Write-Host "Attempting to update WSL to the latest version..."
             wsl --update
             Write-Host "WSL has been successfully updated." -ForegroundColor Green
         } catch {
-            Write-Host "⚠️  Failed to update WSL. Error: $_" -ForegroundColor Red
+            Write-Host "Failed to update WSL. Error: $_" -ForegroundColor Red
         }
     }
 }
 
-
 function InstallUbuntuForWSLIfMissing {
-    Write-Host "`Checking for existing WSL distributions..."
+    Write-Host "Checking for existing WSL distributions..."
 
     try {
-        $existingDistros = wsl -l -q 2>&1 | Where-Object { $_ -and ($_ -notmatch "no installed distributions") }
+        $existingDistros = wsl -l -q 2>&1 |
+            Where-Object { $_ -and ($_ -notmatch "no installed distributions") }
 
         if (-not $existingDistros -or $existingDistros.Count -eq 0) {
             Write-Host "No WSL distributions found on your system." -ForegroundColor Yellow
@@ -178,8 +174,6 @@ function InstallUbuntuForWSLIfMissing {
         Write-Host "Error while checking WSL distributions: $_" -ForegroundColor Red
     }
 }
-
-
 
 function SetDefaultWSL2WithConsent {
     # Assuming the CheckWSLInstalled and CheckWSL2Supported functions are defined elsewhere
@@ -216,8 +210,13 @@ function SetDefaultWSL2WithConsent {
     }
 }
 
-
 function InstallDockerDesktopWithConsent {
+    # Ensure Chocolatey is available
+    if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+        Write-Host "Chocolatey (choco) is not installed. Please install Chocolatey first, then re-run this script." -ForegroundColor Red
+        return
+    }
+
     # Check if Docker is already installed via Chocolatey
     $dockerInstalled = choco list --local-only | Select-String "docker-desktop"
 
@@ -266,7 +265,6 @@ function InstallDockerDesktopWithConsent {
 }
 
 function AddUserToDockerGroupWithConsent {
-
     # List all users
     $users = Get-LocalUser | Where-Object { $_.Enabled -eq $true } | Select-Object Name, Description
 
@@ -284,7 +282,12 @@ function AddUserToDockerGroupWithConsent {
     }
 
     # Get the usernames from the current members of docker-users group
-    $currentMembers = Get-LocalGroupMember -Group "docker-users" | ForEach-Object { $_.Name.Split('\')[-1] }
+    try {
+        $currentMembers = Get-LocalGroupMember -Group "docker-users" | ForEach-Object { $_.Name.Split('\')[-1] }
+    } catch {
+        Write-Host "The 'docker-users' group does not exist yet. It will be created by Docker Desktop if needed." -ForegroundColor Yellow
+        $currentMembers = @()
+    }
 
     # Identify users who will be removed
     $usersToRemove = $currentMembers | Where-Object { $selectedUsers -notcontains $_ }
@@ -324,8 +327,6 @@ function AddUserToDockerGroupWithConsent {
     }
 }
 
-
-
 function CanInstallDocker {
     $isProOrEnterprise, $isProOrEnterpriseReason = CheckWindowsEdition
     $hyperVAvailable, $hyperVAvailableReason = CheckHyperVAvailability
@@ -334,11 +335,11 @@ function CanInstallDocker {
     $IsWSL2Supported, $WSL2SupportedReason = CheckWSL2Supported
 
     $results = @(
-    $isProOrEnterpriseReason,
-    $hyperVAvailableReason,
-    $virtualizationEnabledReason,
-    $isWSLInstallReason,
-    $WSL2SupportedReason
+        $isProOrEnterpriseReason,
+        $hyperVAvailableReason,
+        $virtualizationEnabledReason,
+        $isWSLInstallReason,
+        $WSL2SupportedReason
     )
 
     $canInstall = ($isProOrEnterprise -and ($hyperVAvailable -or $virtualizationEnabled)) -or ($virtualizationEnabled)
@@ -360,10 +361,7 @@ function CanInstallDocker {
     return $canInstall
 }
 
-
-
 function InstallOrUninstallDockerAndDependencies {
-
     $canInstall = CanInstallDocker
 
     # If Docker can't be installed, exit early
@@ -399,128 +397,20 @@ function InstallOrUninstallDockerAndDependencies {
                 SetDefaultWSL2WithConsent
             }
 
-#            InstallUbuntuForWSLIfMissing
-#            ConfigureDockerInWSLWithConsent
+            # Optional future steps:
+            # InstallUbuntuForWSLIfMissing
+            # ConfigureDockerInWSLWithConsent
+
             InstallDockerDesktopWithConsent
             AddUserToDockerGroupWithConsent
         }
         "uninstall" {
-#            UninstallUbuntuWSL
+            # Ensure UninstallDockerDesktop is implemented somewhere
             UninstallDockerDesktop
+            # Optional future step:
+            # UninstallUbuntuWSL
         }
     }
 }
-
-
-
-
-#
-#function ConfigureDockerInWSLWithConsent {
-#    # Step 1: Check for NVIDIA GPU
-#    $gpuPresent = Get-CimInstance Win32_VideoController | Where-Object { $_.Name -like "*NVIDIA*" }
-#
-#    if (-not $gpuPresent) {
-#        Write-Host "No NVIDIA GPU detected. Skipping WSL Docker GPU configuration." -ForegroundColor Yellow
-#        return
-#    }
-#
-#    Write-Host "NVIDIA GPU detected: $($gpuPresent.Name)" -ForegroundColor Green
-#
-#    # Step 2: Check if WSL is installed
-#    $IsWSLInstalled, $reason = CheckWSLInstalled
-#    if (-not $IsWSLInstalled) {
-#        Write-Host "WSL is not installed: $reason" -ForegroundColor Red
-#        return
-#    }
-#
-#    # Step 3: List WSL distros
-#    $wslDistros = wsl -l -q
-#    if (-not $wslDistros) {
-#        Write-Host "No WSL distributions found. Please install one (e.g., Ubuntu from Microsoft Store)." -ForegroundColor Red
-#        return
-#    }
-#
-#    Write-Host "`nAvailable WSL Distributions:" -ForegroundColor Cyan
-#    $wslDistros | ForEach-Object { Write-Host "  - $_" }
-#
-#    $selectedDistro = Read-Host "`nEnter the name of the WSL distro you want to configure"
-#
-#    if (-not ($wslDistros -contains $selectedDistro)) {
-#        Write-Host "Invalid WSL distribution name." -ForegroundColor Red
-#        return
-#    }
-#
-#    # Step 4: Ask user for consent
-#    $consent = $null
-#    while ($consent -notmatch '^[yn]$') {
-#        $consent = Read-Host "Do you want to configure Docker GPU support in '$selectedDistro'? (Y/N)"
-#        $consent = $consent.ToLower()
-#    }
-#
-#    if ($consent -eq 'y') {
-#        Write-Host "Running configuration commands in WSL ($selectedDistro)..." -ForegroundColor Cyan
-#
-#        try {
-#            wsl -d $selectedDistro -- bash -c "
-#                echo 'Updating packages...' &&
-#                sudo apt update &&
-#                echo 'Installing NVIDIA Container Toolkit...' &&
-#                sudo apt install -y nvidia-container-toolkit &&
-#                echo 'Restarting Docker...' &&
-#                sudo systemctl restart docker || echo 'Note: systemctl may fail if systemd is not enabled'
-#            "
-#            Write-Host "Docker GPU support configured in '$selectedDistro'." -ForegroundColor Green
-#        } catch {
-#            Write-Host "Failed to run WSL configuration: $_" -ForegroundColor Red
-#        }
-#    } else {
-#        Write-Host "Operation cancelled by the user." -ForegroundColor Yellow
-#    }
-#}
-
-
-#
-#
-#function UninstallUbuntuWSL {
-#    Write-Host "Checking if Ubuntu is installed in WSL..."
-#
-#    # List installed WSL distros
-#    $distros = wsl -l -q
-#    if (-not ($distros -contains "Ubuntu")) {
-#        Write-Host "dUbuntu is not currently installed in WSL." -ForegroundColor Yellow
-#        return
-#    }
-#
-#    # Confirm removal
-#    $confirm = Read-Host "Ubuntu WSL instance found. Do you want to completely uninstall it? This will delete all Ubuntu data! (yes/no)"
-#    if ($confirm -ne "yes") {
-#        Write-Host "Operation cancelled by user." -ForegroundColor Yellow
-#        return
-#    }
-#
-#    try {
-#        Write-Host "Unregistering Ubuntu from WSL..."
-#        wsl --unregister Ubuntu
-#        Write-Host "Ubuntu has been removed from WSL." -ForegroundColor Green
-#    } catch {
-#        Write-Host "Failed to unregister Ubuntu: $_" -ForegroundColor Red
-#        return
-#    }
-#
-#    # Optional: remove Ubuntu app from Microsoft Store
-#    $storeConfirm = Read-Host "Do you want to uninstall the Ubuntu app from Microsoft Store too? (yes/no)"
-#    if ($storeConfirm -eq "yes") {
-#        try {
-#            Write-Host "Attempting to remove Ubuntu app..."
-#            Get-AppxPackage "*ubuntu*" | Remove-AppxPackage
-#            Write-Host "Ubuntu app removed from Microsoft Store." -ForegroundColor Green
-#        } catch {
-#            Write-Host "Could not remove Ubuntu app from Store: $_" -ForegroundColor Yellow
-#        }
-#    } else {
-#        Write-Host "Ubuntu app remains installed. You can uninstall it manually from the Start menu." -ForegroundColor Cyan
-#    }
-#}
-#
 
 InstallOrUninstallDockerAndDependencies
