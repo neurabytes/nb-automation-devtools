@@ -113,7 +113,7 @@ function Invoke-SetupCredentials {
         return
     }
 
-    $url = "https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/setup_credentials.py"
+    $url = "https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/devtools/setup_credentials.py"
     $tmpFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "nb_setup_credentials.py")
 
     try {
