@@ -4,7 +4,7 @@ function CheckAndDeleteToolsJson {
 
     if (Test-Path -Path $toolsJsonPath) {
         Write-Host "tools.json exists. Deleting the file."
-        #Remove-Item -Path $toolsJsonPath -Force
+        Remove-Item -Path $toolsJsonPath -Force
     } else {
         Write-Host "tools.json does not exist."
     }
