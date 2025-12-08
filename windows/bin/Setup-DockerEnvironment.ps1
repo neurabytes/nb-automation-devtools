@@ -1,6 +1,8 @@
 # Function to check if running as an administrator
 function Test-IsAdmin {
-    $admin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+    $admin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+        [Security.Principal.WindowsBuiltInRole] "Administrator"
+    )
     return $admin
 }
 
@@ -9,7 +11,6 @@ if (-not (Test-IsAdmin)) {
     Write-Host "Please run this script as an Administrator!" -ForegroundColor Red
     return
 }
-
 
 function CheckWindowsEdition {
     # Initialize variable for Windows edition
@@ -43,9 +44,9 @@ function CheckWindowsEdition {
     }
 }
 
-
 function CheckHyperVAvailability {
-    $hyperVStates = Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq 'Microsoft-Hyper-V' -or $_.FeatureName -eq 'Microsoft-Hyper-V-All' }
+    $hyperVStates = Get-WindowsOptionalFeature -Online |
+        Where-Object { $_.FeatureName -eq 'Microsoft-Hyper-V' -or $_.FeatureName -eq 'Microsoft-Hyper-V-All' }
 
     if (-not $hyperVStates) {
         return $false, "We couldn't determine the Hyper-V status on your system."
@@ -60,7 +61,6 @@ function CheckHyperVAvailability {
     }
 }
 
-
 function CheckVirtualizationEnabled {
     $virtualizationEnabled = (Get-ComputerInfo).HyperVisorPresent
 
@@ -70,7 +70,6 @@ function CheckVirtualizationEnabled {
         return $false, "Hardware-assisted virtualization is not enabled. Please restart your computer, enter BIOS/UEFI settings, and enable virtualization. Consult your computer's manual or manufacturer for guidance."
     }
 }
-
 
 function CheckWSL2Supported {
     $osVersion = [System.Environment]::OSVersion.Version
@@ -83,7 +82,6 @@ function CheckWSL2Supported {
     return $true, $message
 }
 
-
 function CheckWSLInstalled {
     $wslFeature = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
 
@@ -93,7 +91,6 @@ function CheckWSLInstalled {
 
     return $false, "WSL is not installed."
 }
-
 
 function EnableHyperVWithConsent {
     # Get user's consent
@@ -112,7 +109,6 @@ function EnableHyperVWithConsent {
     }
 }
 
-
 function InstallWSLWithConsent {
     $IsWSLInstalled, $isWSLInstallReason = CheckWSLInstalled
 
@@ -130,15 +126,54 @@ function InstallWSLWithConsent {
             # as enabling WSL often requires a restart.
             # Once restarted, you can then proceed to install a Linux distribution.
             Write-Host "WSL installation initiated. Please follow the prompts. Restart your computer if necessary."
-
         } else {
             Write-Host "WSL installation aborted by the user."
         }
     } else {
-        Write-Host "WSL is already installed."
+        Write-Host "WSL is already installed." -ForegroundColor Green
+
+        # ✅ Try to update WSL right away
+        try {
+            Write-Host "Attempting to update WSL to the latest version..."
+            wsl --update
+            Write-Host "WSL has been successfully updated." -ForegroundColor Green
+        } catch {
+            Write-Host "Failed to update WSL. Error: $_" -ForegroundColor Red
+        }
     }
 }
 
+function InstallUbuntuForWSLIfMissing {
+    Write-Host "Checking for existing WSL distributions..."
+
+    try {
+        $existingDistros = wsl -l -q 2>&1 |
+            Where-Object { $_ -and ($_ -notmatch "no installed distributions") }
+
+        if (-not $existingDistros -or $existingDistros.Count -eq 0) {
+            Write-Host "No WSL distributions found on your system." -ForegroundColor Yellow
+
+            $consent = Read-Host "Would you like to install Ubuntu for WSL? (yes/no)"
+            if ($consent -eq "yes") {
+                try {
+                    Write-Host "Installing Ubuntu... this may take a few minutes."
+                    wsl --install -d Ubuntu
+                    Write-Host "Ubuntu installation initiated. It will auto-launch to complete setup." -ForegroundColor Green
+                    Write-Host "Please wait for Ubuntu to initialize and create your Linux username when prompted."
+                } catch {
+                    Write-Host "Failed to install Ubuntu: $_" -ForegroundColor Red
+                }
+            } else {
+                Write-Host "Ubuntu installation skipped by user." -ForegroundColor Yellow
+            }
+        } else {
+            Write-Host "WSL distributions already installed:" -ForegroundColor Green
+            $existingDistros | ForEach-Object { Write-Host "  - $_" }
+        }
+    } catch {
+        Write-Host "Error while checking WSL distributions: $_" -ForegroundColor Red
+    }
+}
 
 function SetDefaultWSL2WithConsent {
     # Assuming the CheckWSLInstalled and CheckWSL2Supported functions are defined elsewhere
@@ -175,32 +210,61 @@ function SetDefaultWSL2WithConsent {
     }
 }
 
-
 function InstallDockerDesktopWithConsent {
-    # Get user's consent
-    $userConsent = $null
-    while ($userConsent -notmatch '^[yn]$') {
-        $userConsent = Read-Host "Would you like to install Docker Desktop? (Y/N)"
-        $userConsent = $userConsent.ToLower()
+    # Ensure Chocolatey is available
+    if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+        Write-Host "Chocolatey (choco) is not installed. Please install Chocolatey first, then re-run this script." -ForegroundColor Red
+        return
     }
 
-    # If user gives consent, proceed with Docker Desktop installation
-    if ($userConsent -eq 'y') {
-        Write-Host "Installing Docker Desktop..."
+    # Check if Docker is already installed via Chocolatey
+    $dockerInstalled = choco list --local-only | Select-String "docker-desktop"
 
-        try {
-            Invoke-Command -ScriptBlock { choco install docker-desktop -y }
-            Write-Host "Docker Desktop installed successfully!" -ForegroundColor Green
-        } catch {
-            Write-Host "Error encountered while installing Docker Desktop: $_" -ForegroundColor Red
+    if ($dockerInstalled) {
+        Write-Host "Docker Desktop is already installed." -ForegroundColor Yellow
+
+        # Ask user if they want to update it
+        $updateConsent = $null
+        while ($updateConsent -notmatch '^[yn]$') {
+            $updateConsent = Read-Host "Would you like to update Docker Desktop to the latest version? (Y/N)"
+            $updateConsent = $updateConsent.ToLower()
         }
+
+        if ($updateConsent -eq 'y') {
+            try {
+                Write-Host "Updating Docker Desktop..."
+                Invoke-Command -ScriptBlock { choco upgrade docker-desktop -y }
+                Write-Host "Docker Desktop has been updated." -ForegroundColor Green
+            } catch {
+                Write-Host "Error updating Docker Desktop: $_" -ForegroundColor Red
+            }
+        } else {
+            Write-Host "Docker update skipped by user."
+        }
+
     } else {
-        Write-Host "Docker Desktop installation aborted by the user."
+        # Ask to install Docker
+        $installConsent = $null
+        while ($installConsent -notmatch '^[yn]$') {
+            $installConsent = Read-Host "Docker Desktop is not installed. Would you like to install it? (Y/N)"
+            $installConsent = $installConsent.ToLower()
+        }
+
+        if ($installConsent -eq 'y') {
+            try {
+                Write-Host "Installing Docker Desktop..."
+                Invoke-Command -ScriptBlock { choco install docker-desktop -y }
+                Write-Host "Docker Desktop installed successfully!" -ForegroundColor Green
+            } catch {
+                Write-Host "Error installing Docker Desktop: $_" -ForegroundColor Red
+            }
+        } else {
+            Write-Host "Docker Desktop installation aborted by user."
+        }
     }
 }
 
 function AddUserToDockerGroupWithConsent {
-
     # List all users
     $users = Get-LocalUser | Where-Object { $_.Enabled -eq $true } | Select-Object Name, Description
 
@@ -218,7 +282,12 @@ function AddUserToDockerGroupWithConsent {
     }
 
     # Get the usernames from the current members of docker-users group
-    $currentMembers = Get-LocalGroupMember -Group "docker-users" | ForEach-Object { $_.Name.Split('\')[-1] }
+    try {
+        $currentMembers = Get-LocalGroupMember -Group "docker-users" | ForEach-Object { $_.Name.Split('\')[-1] }
+    } catch {
+        Write-Host "The 'docker-users' group does not exist yet. It will be created by Docker Desktop if needed." -ForegroundColor Yellow
+        $currentMembers = @()
+    }
 
     # Identify users who will be removed
     $usersToRemove = $currentMembers | Where-Object { $selectedUsers -notcontains $_ }
@@ -258,8 +327,6 @@ function AddUserToDockerGroupWithConsent {
     }
 }
 
-
-
 function CanInstallDocker {
     $isProOrEnterprise, $isProOrEnterpriseReason = CheckWindowsEdition
     $hyperVAvailable, $hyperVAvailableReason = CheckHyperVAvailability
@@ -268,11 +335,11 @@ function CanInstallDocker {
     $IsWSL2Supported, $WSL2SupportedReason = CheckWSL2Supported
 
     $results = @(
-    $isProOrEnterpriseReason,
-    $hyperVAvailableReason,
-    $virtualizationEnabledReason,
-    $isWSLInstallReason,
-    $WSL2SupportedReason
+        $isProOrEnterpriseReason,
+        $hyperVAvailableReason,
+        $virtualizationEnabledReason,
+        $isWSLInstallReason,
+        $WSL2SupportedReason
     )
 
     $canInstall = ($isProOrEnterprise -and ($hyperVAvailable -or $virtualizationEnabled)) -or ($virtualizationEnabled)
@@ -295,9 +362,103 @@ function CanInstallDocker {
 }
 
 
+function UninstallDockerDesktop {
+    Write-Host "Starting Docker Desktop uninstallation..." -ForegroundColor Cyan
+
+    # -------------------------
+    # 1. Try Chocolatey uninstall
+    # -------------------------
+    $canUseChoco = $false
+    if (Get-Command choco -ErrorAction SilentlyContinue) {
+        $dockerPkg = choco list --local-only | Select-String "docker-desktop"
+        if ($dockerPkg) {
+            $canUseChoco = $true
+        }
+    }
+
+    if ($canUseChoco) {
+        $consent = Read-Host "Docker Desktop appears to be installed via Chocolatey. Uninstall it now? (yes/no)"
+        if ($consent -ne "yes") {
+            Write-Host "Uninstall cancelled by user." -ForegroundColor Yellow
+            return
+        }
+
+        try {
+            Write-Host "Uninstalling Docker Desktop via Chocolatey..."
+            choco uninstall docker-desktop -y
+            Write-Host "Docker Desktop has been uninstalled via Chocolatey." -ForegroundColor Green
+        } catch {
+            Write-Host "Failed to uninstall Docker Desktop via Chocolatey: $_" -ForegroundColor Red
+            return
+        }
+    }
+    else {
+        # -------------------------
+        # 2. Fallback: Installer-based CLI uninstall
+        #    (official documented method)
+        # -------------------------
+        $installerPath = "C:\Program Files\Docker\Docker\Docker Desktop Installer.exe"
+
+        if (-not (Test-Path $installerPath)) {
+            Write-Host "Docker Desktop does not appear to be installed via Chocolatey," -ForegroundColor Yellow
+            Write-Host "and the Docker Desktop installer was not found at:" -ForegroundColor Yellow
+            Write-Host "  $installerPath" -ForegroundColor Yellow
+            Write-Host "Uninstall cannot continue automatically. Please uninstall Docker Desktop via Settings > Apps manually." -ForegroundColor Red
+            return
+        }
+
+        $consent = Read-Host "Uninstall Docker Desktop using '$installerPath uninstall'? (yes/no)"
+        if ($consent -ne "yes") {
+            Write-Host "Uninstall cancelled by user." -ForegroundColor Yellow
+            return
+        }
+
+        try {
+            Write-Host "Launching Docker Desktop installer to uninstall..." -ForegroundColor Cyan
+            Start-Process -FilePath $installerPath -ArgumentList "uninstall" -Wait
+            Write-Host "Docker Desktop uninstall process has completed." -ForegroundColor Green
+        } catch {
+            Write-Host "Failed to run Docker Desktop uninstaller: $_" -ForegroundColor Red
+            return
+        }
+    }
+
+    # -------------------------
+    # 3. Optional: clean up leftover data
+    #    (containers/images/volumes/config WILL be removed)
+    # -------------------------
+    $cleanupConsent = Read-Host "Do you want to remove Docker data directories (images, containers, configs)? This is destructive. (yes/no)"
+    if ($cleanupConsent -ne "yes") {
+        Write-Host "Skipping Docker data cleanup." -ForegroundColor Yellow
+        return
+    }
+
+    $pathsToRemove = @(
+        "C:\ProgramData\Docker",
+        "C:\ProgramData\DockerDesktop",
+        "C:\Program Files\Docker",
+        (Join-Path $env:LOCALAPPDATA "Docker"),
+        (Join-Path $env:APPDATA "Docker"),
+        (Join-Path $env:APPDATA "Docker Desktop"),
+        (Join-Path $env:USERPROFILE ".docker")
+    )
+
+    foreach ($path in $pathsToRemove) {
+        if (Test-Path $path) {
+            try {
+                Write-Host "Removing: $path"
+                Remove-Item -Recurse -Force $path
+            } catch {
+                Write-Host "Failed to remove $path : $_" -ForegroundColor Yellow
+            }
+        }
+    }
+
+    Write-Host "Docker Desktop and associated data have been removed (where possible)." -ForegroundColor Green
+}
+
 
 function InstallOrUninstallDockerAndDependencies {
-
     $canInstall = CanInstallDocker
 
     # If Docker can't be installed, exit early
@@ -333,14 +494,20 @@ function InstallOrUninstallDockerAndDependencies {
                 SetDefaultWSL2WithConsent
             }
 
+            # Optional future steps:
+            # InstallUbuntuForWSLIfMissing
+            # ConfigureDockerInWSLWithConsent
+
             InstallDockerDesktopWithConsent
             AddUserToDockerGroupWithConsent
         }
         "uninstall" {
+            # Ensure UninstallDockerDesktop is implemented somewhere
             UninstallDockerDesktop
+            # Optional future step:
+            # UninstallUbuntuWSL
         }
     }
 }
-
 
 InstallOrUninstallDockerAndDependencies
