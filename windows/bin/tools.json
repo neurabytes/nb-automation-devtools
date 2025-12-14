@@ -4,15 +4,15 @@
       "description": "Data Engineer - Tools for data pipeline development, cloud platforms, and data processing",
       "tools": {
         "git": "2.52.0",
-        "gh": "2.83.1",
-        "intellijidea-community": "2025.2.5",
+        "gh": "2.83.2",
+        "intellijidea-community": "2025.3.0",
         "Gpg4win": "4.4.1",
         "github-desktop": "3.5.4",
         "SourceTree": "3.4.27",
         "make": "4.4.1",
-        "awscli": "2.32.11",
+        "awscli": "2.32.16",
         "azure-cli": "2.81.0",
-        "terraform": "1.14.1",
+        "terraform": "1.14.2",
         "SQLite": "3.51.1",
         "dbeaver": "25.3.0",
         "scala.portable": "2.11.4",
@@ -20,11 +20,11 @@
         "meld": "3.22.2",
         "winscp": "6.5.5",
         "maven": "3.9.11",
-        "nodejs": "20.19.6",
+        "nodejs": "24.12.0",
         "go": "1.25.5",
         "act-cli": "0.2.83",
         "lm-studio": "0.3.29",
-        "visualstudio2022buildtools": "117.14.21",
+        "visualstudio2022buildtools": "117.14.22",
         "temurin17": "17.0.14.7",
         "openjdk": "25.0.0.1",
         "gradle": "9.1.0"
@@ -34,19 +34,19 @@
       "description": "Student - Essential tools for students and general productivity",
       "tools": {
         "git": "2.52.0",
-        "gh": "2.83.1",
+        "gh": "2.83.2",
         "make": "4.4.1",
-        "intellijidea-community": "2025.2.5",
+        "intellijidea-community": "2025.3.0",
         "openjdk": "25.0.0.1",
         "maven": "3.9.11",
-        "nodejs": "20.19.6"
+        "nodejs": "24.12.0"
       }
     },
     "data_analyst": {
       "description": "Data Analyst - Tools for data analysis, visualization, and statistical computing",
       "tools": {
         "git": "2.52.0",
-        "gh": "2.83.1",
+        "gh": "2.83.2",
         "Gpg4win": "4.4.1",
         "github-desktop": "3.5.4",
         "SourceTree": "3.4.27",
@@ -64,7 +64,7 @@
       "description": "Data Scientist - Tools for machine learning, statistical analysis, and research",
       "tools": {
         "git": "2.52.0",
-        "gh": "2.83.1",
+        "gh": "2.83.2",
         "Gpg4win": "4.4.1",
         "github-desktop": "3.5.4",
         "SourceTree": "3.4.27",
@@ -74,7 +74,7 @@
         "SQLite": "3.51.1",
         "dbeaver": "25.3.0",
         "postman": "11.46.6",
-        "cursoride": "2.1.49"
+        "cursoride": "2.2.20"
       }
     }
   },
