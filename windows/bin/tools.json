@@ -25,6 +25,7 @@
         "act-cli": "0.2.83",
         "lm-studio": "0.3.29",
         "visualstudio2022buildtools": "117.14.22",
+        "vscode": "1.107.0",
         "temurin17": "17.0.14.7",
         "openjdk": "25.0.0.1",
         "gradle": "9.1.0"
