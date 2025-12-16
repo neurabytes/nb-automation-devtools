@@ -24,6 +24,30 @@ jobs:
       - name: Update Windows tools.json
         run: python .github/workflows/update_tools.py
 
+      - name: Ensure brew on PATH (Ubuntu)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if command -v brew >/dev/null 2>&1; then
+            echo "brew already on PATH: $(command -v brew)"
+            exit 0
+          fi
+
+          for p in /home/linuxbrew/.linuxbrew/bin/brew /home/runner/.linuxbrew/bin/brew; do
+            if [ -x "$p" ]; then
+              echo "Found brew at $p"
+              echo "$(dirname "$p")" >> "$GITHUB_PATH"
+              exit 0
+            fi
+          done
+
+          echo "brew not found; installing Linuxbrew..."
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
+          echo "/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"
+
       - name: Update macOS tools.json
         run: python .github/workflows/update_tools_macos.py
 
