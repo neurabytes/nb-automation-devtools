@@ -7,7 +7,8 @@ STATE_DIR="/Library/Application Support/nb-automation"
 STATE_FILE="$STATE_DIR/installed_tools_state.json"
 
 DRY_RUN=false   # <- set to false later when you want real installs
-DEBUG=true     # <- set to false to quiet debug logs
+DEBUG=false     # <- set to false to quiet debug logs
+HASHICORP_TAPPED=false # Track whether we've tapped hashicorp so we only do it once
 
 debug() {
     if [ "${DEBUG}" = "true" ]; then
@@ -18,6 +19,38 @@ debug() {
 # -------------------------
 # Helpers
 # -------------------------
+ensure_hashicorp_tap() {
+    # Ensure the hashicorp/tap is tapped before installing tap-only packages.
+    if [ "${HASHICORP_TAPPED}" = "true" ]; then
+        return
+    fi
+
+    if [ "$DRY_RUN" = "true" ]; then
+        debug "Would run: brew tap hashicorp/tap   (DRY RUN)"
+        HASHICORP_TAPPED=true
+        return
+    fi
+
+    if ! brew tap | grep -q "^hashicorp/tap$"; then
+        echo "Tapping hashicorp/tap..."
+        brew tap hashicorp/tap
+    fi
+    HASHICORP_TAPPED=true
+}
+
+map_brew_pkg() {
+    # Map logical tool name (from tools.json keys) to brew package name.
+    local tool="$1"
+    case "$tool" in
+        terraform)
+            # Terraform should be installed from hashicorp/tap/terraform
+            echo "hashicorp/tap/terraform"
+            ;;
+        *)
+            echo "$tool"
+            ;;
+    esac
+}
 
 ensure_jq() {
     if ! command -v jq >/dev/null 2>&1; then
@@ -153,7 +186,6 @@ load_tools_and_role() {
 # -------------------------
 # Remove old tools
 # -------------------------
-
 remove_obsolete_tools() {
     local prev_json="$1"
     local current_tool_json="$2"
@@ -190,11 +222,13 @@ remove_obsolete_tools() {
         done
 
         if [ "$found" -eq 0 ]; then
+            local pkg
+            pkg=$(map_brew_pkg "$prev")
             if [ "$DRY_RUN" = "true" ]; then
-                echo "Would uninstall obsolete tool: $prev   (DRY RUN)"
+                echo "Would uninstall obsolete tool: $prev (brew package: $pkg)   (DRY RUN)"
             else
                 echo "Uninstalling obsolete tool: $prev"
-                brew uninstall "$prev" || true
+                brew uninstall "$pkg" || true
             fi
         fi
     done
@@ -217,20 +251,26 @@ install_or_upgrade_tools() {
 
     for tool in "${NAMES[@]}"; do
         VERSION=$(echo "$tools_json" | jq -r ".[\"$tool\"]")
+        pkg=$(map_brew_pkg "$tool")
 
-        if brew list --versions "$tool" >/dev/null 2>&1; then
+        # If package comes from hashicorp tap ensure the tap exists
+        case "$pkg" in
+            hashicorp/tap/*) ensure_hashicorp_tap ;;
+        esac
+
+        if brew list --versions "$pkg" >/dev/null 2>&1; then
             if [ "$DRY_RUN" = "true" ]; then
-                echo "Would upgrade $tool to $VERSION   (DRY RUN)"
+                echo "Would upgrade $tool (brew package: $pkg) to $VERSION   (DRY RUN)"
             else
-                echo "Upgrading $tool to $VERSION..."
-                brew upgrade "$tool" || true
+                echo "Upgrading $tool (brew package: $pkg) to $VERSION..."
+                brew upgrade "$pkg" || true
             fi
         else
             if [ "$DRY_RUN" = "true" ]; then
-                echo "Would install $tool ($VERSION)   (DRY RUN)"
+                echo "Would install $tool (brew package: $pkg) $VERSION   (DRY RUN)"
             else
-                echo "Installing $tool ($VERSION)..."
-                brew install "$tool"
+                echo "Installing $tool (brew package: $pkg) $VERSION..."
+                brew install "$pkg"
             fi
         fi
     done
@@ -250,7 +290,8 @@ uninstall_tools() {
     # Filter to only those actually installed
     INSTALLED_TO_REMOVE=()
     for tool in "${NAMES[@]}"; do
-        if brew list --versions "$tool" >/dev/null 2>&1; then
+        pkg=$(map_brew_pkg "$tool")
+        if brew list --versions "$pkg" >/dev/null 2>&1; then
             INSTALLED_TO_REMOVE+=( "$tool" )
         fi
     done
@@ -272,11 +313,12 @@ uninstall_tools() {
     fi
 
     for tool in "${INSTALLED_TO_REMOVE[@]}"; do
+        pkg=$(map_brew_pkg "$tool")
         if [ "$DRY_RUN" = "true" ]; then
-            echo "Would uninstall $tool   (DRY RUN)"
+            echo "Would uninstall $tool (brew package: $pkg)   (DRY RUN)"
         else
             echo "Uninstalling $tool"
-            if ! brew uninstall "$tool"; then
+            if ! brew uninstall "$pkg"; then
                 echo "Warning: failed to uninstall $tool" >&2
             fi
         fi
