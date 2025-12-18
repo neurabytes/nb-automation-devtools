@@ -1,56 +1,156 @@
+# python
 import json
 import os
-import requests
-from typing import Optional
-
-FORMULA_API = "https://formulae.brew.sh/api/formula/{pkg}.json"
-CASK_API = "https://formulae.brew.sh/api/cask/{pkg}.json"
+import shutil
+import subprocess
+from typing import Optional, Any, Dict
 
 
-def latest_brew_version(pkg_name: str) -> Optional[str]:
+def _brew_exists() -> bool:
+    return shutil.which("brew") is not None
+
+
+def _brew_has_tap(tap: str) -> bool:
     """
-    Return latest version string for a Homebrew formula or cask, or None if not found.
-
-    Tries:
-      1. formula API: /api/formula/{pkg}.json  -> versions.stable
-      2. cask API:    /api/cask/{pkg}.json     -> version
+    Return True if the given tap is already tapped.
     """
-    # 1) Try as formula
     try:
-        r = requests.get(FORMULA_API.format(pkg=pkg_name), timeout=15)
-        if r.status_code == 200:
-            data = r.json()
-            versions = data.get("versions", {})
-            stable = versions.get("stable")
-            if isinstance(stable, str) and stable:
-                return stable
+        p = subprocess.run(
+            ["brew", "tap"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+        if p.returncode != 0:
+            return False
+        taps = [line.strip() for line in p.stdout.splitlines() if line.strip()]
+        return tap in taps
     except Exception:
+        return False
+
+
+def _brew_tap(tap: str) -> bool:
+    """
+    Attempt to tap the given tap. Returns True on success.
+    """
+    try:
+        p = subprocess.run(
+            ["brew", "tap", tap],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+        return p.returncode == 0
+    except Exception:
+        return False
+
+
+def _ensure_tap_for_pkg(pkg: str) -> None:
+    """
+    If pkg is tap-qualified like 'hashicorp/tap/terraform', ensure the 'hashicorp/tap'
+    tap is installed before querying brew.
+    """
+    if "/" not in pkg:
+        return
+
+    parts = pkg.split("/")
+    if len(parts) < 2:
+        return
+
+    # The tap name is the first two components, e.g. 'hashicorp/tap'
+    tap = "/".join(parts[:2])
+    if _brew_has_tap(tap):
+        return
+
+    # attempt to tap; ignore failure (brew info may still find versions in some cases)
+    _brew_tap(tap)
+
+
+def _brew_info_json_v2(pkg: str, kind: str) -> Optional[Dict[str, Any]]:
+    """
+    kind: 'formula' or 'cask'
+    Returns Homebrew JSON v2 dict or None.
+    """
+    if not _brew_exists():
+        return None
+
+    cmd = ["brew", "info", "--json=v2", f"--{kind}", pkg]
+    p = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if p.returncode != 0 or not p.stdout.strip():
+        return None
+
+    try:
+        return json.loads(p.stdout)
+    except json.JSONDecodeError:
+        return None
+
+
+def _extract_formula_version(j: Dict[str, Any]) -> Optional[str]:
+    try:
+        formulae = j.get("formulae") or []
+        if not formulae:
+            return None
+        stable = (formulae[0].get("versions") or {}).get("stable")
+        return stable if isinstance(stable, str) and stable else None
+    except Exception:
+        return None
+
+
+def _extract_cask_version(j: Dict[str, Any]) -> Optional[str]:
+    try:
+        casks = j.get("casks") or []
+        if not casks:
+            return None
+        version = casks[0].get("version")
+        return version if isinstance(version, str) and version else None
+    except Exception:
+        return None
+
+
+def latest_brew_version(pkg: str) -> Optional[str]:
+    """
+    Resolve latest version for a Homebrew formula or cask using brew CLI JSON v2.
+    Works for core, cask, and tap-qualified names (e.g. hashicorp/tap/terraform).
+    """
+    # ensure tap is present for tap-qualified packages
+    try:
+        _ensure_tap_for_pkg(pkg)
+    except Exception:
+        # best-effort: proceed even if tap detection/tapping fails
         pass
 
-    # 2) Try as cask
-    try:
-        r = requests.get(CASK_API.format(pkg=pkg_name), timeout=15)
-        if r.status_code == 200:
-            data = r.json()
-            # cask API exposes a single "version" string (can include comma)
-            version = data.get("version")
-            if isinstance(version, str) and version:
-                return version
-    except Exception:
-        pass
+    j = _brew_info_json_v2(pkg, "formula")
+    v = _extract_formula_version(j) if j else None
+    if v:
+        return v
+
+    j = _brew_info_json_v2(pkg, "cask")
+    v = _extract_cask_version(j) if j else None
+    if v:
+        return v
 
     return None
 
 
 def update_macos_tools() -> None:
-    """
-    Update macOS tools.json (mac/bin/tools.json) with latest versions from Homebrew.
-    """
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
     tools_path = os.path.join(repo_root, "mac", "bin", "tools.json")
 
     if not os.path.exists(tools_path):
         raise FileNotFoundError(f"macOS tools.json not found at: {tools_path}")
+
+    if not _brew_exists():
+        raise RuntimeError(
+            "Homebrew ('brew') not found on PATH. Install Homebrew or run this on a Mac with brew installed."
+        )
 
     with open(tools_path, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -69,7 +169,7 @@ def update_macos_tools() -> None:
 
     with open(tools_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
-        f.write('\n')
+        f.write("\n")
 
     print(f"macOS tools updated successfully in {tools_path}")
 
