@@ -5,19 +5,19 @@
       "tools": {
         "git": "2.52.0",
         "gh": "2.83.2",
-        "intellij-idea": "2025.3,253.28294.334",
+        "intellij-idea": "2025.3.1,253.29346.138",
         "github": "3.5.4-9dfb8d8d",
         "sourcetree": "4.2.15,305",
         "make": "4.4.1",
-        "awscli": "2.32.17",
+        "awscli": "2.32.19",
         "azure-cli": "2.81.0",
-        "hashicorp/tap/terraform": "1.5.7",
+        "hashicorp/tap/terraform": "1.14.3",
         "sqlite": "3.51.1",
         "dbeaver-community": "25.3.0",
         "scala": "3.7.4",
-        "postman": "11.76.3",
+        "postman": "11.76.5",
         "meld": "3.22.3+105",
-        "maven": "3.9.11",
+        "maven": "3.9.12",
         "node": "25.2.1",
         "go": "1.25.5",
         "act": "0.2.83",
@@ -26,8 +26,8 @@
         "openjdk": "25.0.1",
         "gradle": "9.2.1",
         "git-credential-manager": "2.6.1",
-        "pyenv": "2.6.16",
-        "visual-studio-code": "1.107.0"
+        "pyenv": "2.6.17",
+        "visual-studio-code": "1.107.1"
       }
     },
     "student": {
@@ -36,11 +36,11 @@
         "git": "2.52.0",
         "gh": "2.83.2",
         "make": "4.4.1",
-        "intellij-idea": "2025.3,253.28294.334",
+        "intellij-idea": "2025.3.1,253.29346.138",
         "openjdk": "25.0.1",
-        "maven": "3.9.11",
+        "maven": "3.9.12",
         "node": "25.2.1",
-        "visual-studio-code": "1.107.0"
+        "visual-studio-code": "1.107.1"
       }
     },
     "data_analyst": {
@@ -53,10 +53,10 @@
         "make": "4.4.1",
         "rstudio": "2025.09.2,418",
         "r": "4.5.2",
-        "tableau-public": "2025.3.0",
+        "tableau-public": "2025.3.1",
         "sqlite": "3.51.1",
         "dbeaver-community": "25.3.0",
-        "postman": "11.76.3"
+        "postman": "11.76.5"
       }
     },
     "data_scientist": {
@@ -71,10 +71,10 @@
         "r": "4.5.2",
         "sqlite": "3.51.1",
         "dbeaver-community": "25.3.0",
-        "postman": "11.76.3",
-        "cursor": "2.2.20,b3573281c4775bfc6bba466bf6563d3d498d1074",
+        "postman": "11.76.5",
+        "cursor": "2.2.36,55c9bc11e99cedd1fb93fbb7996abf779c58315f",
         "git-credential-manager": "2.6.1",
-        "pyenv": "2.6.16"
+        "pyenv": "2.6.17"
       }
     }
   },
