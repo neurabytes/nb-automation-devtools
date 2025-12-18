@@ -1,3 +1,4 @@
+# python
 import json
 import os
 import shutil
@@ -7,6 +8,64 @@ from typing import Optional, Any, Dict
 
 def _brew_exists() -> bool:
     return shutil.which("brew") is not None
+
+
+def _brew_has_tap(tap: str) -> bool:
+    """
+    Return True if the given tap is already tapped.
+    """
+    try:
+        p = subprocess.run(
+            ["brew", "tap"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+        if p.returncode != 0:
+            return False
+        taps = [line.strip() for line in p.stdout.splitlines() if line.strip()]
+        return tap in taps
+    except Exception:
+        return False
+
+
+def _brew_tap(tap: str) -> bool:
+    """
+    Attempt to tap the given tap. Returns True on success.
+    """
+    try:
+        p = subprocess.run(
+            ["brew", "tap", tap],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+        return p.returncode == 0
+    except Exception:
+        return False
+
+
+def _ensure_tap_for_pkg(pkg: str) -> None:
+    """
+    If pkg is tap-qualified like 'hashicorp/tap/terraform', ensure the 'hashicorp/tap'
+    tap is installed before querying brew.
+    """
+    if "/" not in pkg:
+        return
+
+    parts = pkg.split("/")
+    if len(parts) < 2:
+        return
+
+    # The tap name is the first two components, e.g. 'hashicorp/tap'
+    tap = "/".join(parts[:2])
+    if _brew_has_tap(tap):
+        return
+
+    # attempt to tap; ignore failure (brew info may still find versions in some cases)
+    _brew_tap(tap)
 
 
 def _brew_info_json_v2(pkg: str, kind: str) -> Optional[Dict[str, Any]]:
@@ -61,6 +120,13 @@ def latest_brew_version(pkg: str) -> Optional[str]:
     Resolve latest version for a Homebrew formula or cask using brew CLI JSON v2.
     Works for core, cask, and tap-qualified names (e.g. hashicorp/tap/terraform).
     """
+    # ensure tap is present for tap-qualified packages
+    try:
+        _ensure_tap_for_pkg(pkg)
+    except Exception:
+        # best-effort: proceed even if tap detection/tapping fails
+        pass
+
     j = _brew_info_json_v2(pkg, "formula")
     v = _extract_formula_version(j) if j else None
     if v:
