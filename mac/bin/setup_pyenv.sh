@@ -79,7 +79,7 @@ PYENV_PYTHON="$(pyenv which python)"
 export PIP_BREAK_SYSTEM_PACKAGES=1
 
 "$PYENV_PYTHON" -m pip install --upgrade pip
-"$PYENV_PYTHON" -m pip install pipenv pre-commit
+"$PYENV_PYTHON" -m pip install pipenv pre-commit rich
 
 echo "pip / pipenv / pre-commit installed using: $PYENV_PYTHON"
 

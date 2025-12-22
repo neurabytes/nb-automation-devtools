@@ -173,6 +173,7 @@ if ($action -eq "install") {
     python --version
     pip install pipenv
     pip install pre-commit
+    pip install rich
     pyenv rehash
 
     $pythonCmd = (Get-Command python).Source
