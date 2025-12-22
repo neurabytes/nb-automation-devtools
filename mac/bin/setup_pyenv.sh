@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PYTHON_VERSION="3.11.6"
+PYTHON_VERSION="3.11.9"
 CREDENTIALS_URL="https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/devtools/setup_credentials.py"
 
 if [ "$(id -u)" -eq 0 ]; then
