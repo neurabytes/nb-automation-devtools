@@ -166,8 +166,8 @@ if ($action -eq "install") {
     Import-Module $env:ChocolateyInstall\helpers\ChocolateyProfile.psm1
     refreshenv
 
-    pyenv install 3.11.6
-    pyenv global 3.11.6
+    pyenv install 3.11.9
+    pyenv global 3.11.9
 
     refreshenv
     python --version
