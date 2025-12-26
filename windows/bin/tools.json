@@ -28,7 +28,8 @@
         "vscode": "1.107.1",
         "temurin17": "17.0.14.7",
         "openjdk": "25.0.0.1",
-        "gradle": "9.1.0"
+        "gradle": "9.1.0",
+        "uv": "0.9.18"
       }
     },
     "student": {
@@ -40,7 +41,8 @@
         "intellijidea-community": "2025.3.0",
         "openjdk": "25.0.0.1",
         "maven": "3.9.12",
-        "nodejs": "24.12.0"
+        "nodejs": "24.12.0",
+        "uv": "0.9.18"
       }
     },
     "data_analyst": {
@@ -58,7 +60,8 @@
         "tableau-public": "2025.2.2",
         "SQLite": "3.51.1",
         "dbeaver": "25.3.0",
-        "postman": "11.46.6"
+        "postman": "11.46.6",
+        "uv": "0.9.18"
       }
     },
     "data_scientist": {
@@ -75,7 +78,8 @@
         "SQLite": "3.51.1",
         "dbeaver": "25.3.0",
         "postman": "11.46.6",
-        "cursoride": "2.2.36"
+        "cursoride": "2.2.36",
+        "uv": "0.9.18"
       }
     }
   },
