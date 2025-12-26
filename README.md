@@ -17,14 +17,14 @@ This repository contains automation to setup the development environment for the
 
 ---
 
-### 1.3 Prerequisites
+### 1.2 Prerequisites
 - Windows Operating System
 - PowerShell with administrative rights
 
 ---
 
 
-### 1.4 Install Development tools
+### 1.3 Install Development tools
 
 This script will install Chocolatey first and it will either install, upgrade, or uninstall a specified list of developer tools based on the versions provided in the script.
 
@@ -37,7 +37,9 @@ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.
 
 ---
 
-### 1.5 Install Python and other packages using pyenv-win
+### 1.4 Install Python
+
+#### Using pyenv-win
 This script installs python environment manager `pyenv-win` on Windows. This will also install pipenv and pre-commit.
 
 **To Run the Script Directly from GitHub:**
@@ -47,9 +49,21 @@ Set-ExecutionPolicy Bypass -Scope Process
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-PyEnvWin.ps1')
 ```
 
+#### Using uv
+This script installs `uv` (Universal Version Manager) to manage Python versions on Windows.
+
+**To Run the Script Directly from GitHub:**
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-UV-Python.ps1')
+```
+
+
+
 ---
 
-### 1.6 Install Docker Desktop
+### 1.5 Install Docker Desktop
 This script installs Docker Desktop for Windows using Chocolatey.
 
 **To Run the Script Directly from GitHub:**
@@ -61,7 +75,7 @@ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.
 
 ---
 
-### 1.7 Install Git sign commit
+### 1.6 Install Git sign commit
 This script configures Git to sign commits and tags with GPG on Windows. It automates the process of installing GPG and setting it up with Git for commit signature verification.
 
 **To Run the Script Directly from GitHub:**
@@ -103,7 +117,9 @@ This script ensures Homebrew is installed, then installs/updates developer tools
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_dev_environment.sh)"
 ```
 
-### 2.4 Install Python using pyenv
+### 2.4 Install Python
+
+#### 2.4.1 Using pyenv
 
 Installs `pyenv`, Python 3.11.x, `pipenv`, and `pre-commit`.
 
@@ -112,6 +128,16 @@ Installs `pyenv`, Python 3.11.x, `pipenv`, and `pre-commit`.
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_pyenv.sh)"
 ```
+
+#### 2.4.2 Using uv
+
+Installs `uv` (Universal Version Manager) to manage Python versions.
+**Run directly from GitHub:**
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/ssetup_uv_python.sh)"
+```
+
 
 
 ### 2.5 Install Docker Desktop
