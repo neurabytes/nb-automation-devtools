@@ -144,16 +144,13 @@ function Install-AndActivate-Python {
     Write-Host "Version check:"
     $ver = & $nbPython --version 2>&1
     Write-Host ($ver | Out-String).Trim()
-    Write-Host "ExitCode=$LASTEXITCODE"
 
     # enforce exact version, same as your mac script
     $ver = & $nbPython -c "import sys; assert sys.version.startswith('$PYTHON_VERSION'), sys.version"
     Write-Host ($ver | Out-String).Trim()
-    Write-Host "ExitCode=$LASTEXITCODE"
 
     $ver = & $nbPython -c "import rich; print('rich OK')" | Out-Null
     Write-Host ($ver | Out-String).Trim()
-    Write-Host "ExitCode=$LASTEXITCODE"
 
     Write-Host ""
     Write-Host "Base project ready. Use:"
@@ -162,7 +159,6 @@ function Install-AndActivate-Python {
     Write-Host ""
     $ver = & $preCommitExe --version
     Write-Host ($ver | Out-String).Trim()
-    Write-Host "ExitCode=$LASTEXITCODE"
 
 
     return @{
