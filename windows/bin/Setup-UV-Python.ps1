@@ -212,8 +212,8 @@ $result = Install-AndActivate-Python -BaseProjectDir $baseProjectDir
 Write-Host ""
 Write-Host "Setup complete."
 Write-Host "Use:"
-Write-Host "  $($result.NB_PYTHON)"
-Write-Host "  $($result.PRECOMMIT)"
+Write-Host "  $($result['NB_PYTHON'])"
+Write-Host "  $($result['PRECOMMIT'])"
 Write-Host "Restart PowerShell if PATH changes are needed for uv."
 
 Optional-Setup-Credentials -PythonExe $result.NB_PYTHON
