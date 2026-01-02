@@ -142,19 +142,19 @@ function Install-AndActivate-Python {
     if (-not (Test-Path $preCommitExe)) { throw "ERROR: Expected pre-commit not found at $preCommitExe" }
 
     Write-Host "Version check:"
-    & $nbPython --version
+    $nbPython --version
 
     # enforce exact version, same as your mac script
-    & $nbPython -c "import sys; assert sys.version.startswith('$PYTHON_VERSION'), sys.version"
+    $nbPython -c "import sys; assert sys.version.startswith('$PYTHON_VERSION'), sys.version"
 
-    & $nbPython -c "import rich; print('rich OK')" | Out-Null
+    $nbPython -c "import rich; print('rich OK')" | Out-Null
 
     Write-Host ""
     Write-Host "Base project ready. Use:"
     Write-Host "  Python:     $nbPython"
     Write-Host "  pre-commit: $preCommitExe"
     Write-Host ""
-    & $preCommitExe --version
+    $preCommitExe --version
 
     return @{
         NB_PYTHON  = $nbPython
