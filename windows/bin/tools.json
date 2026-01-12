@@ -5,17 +5,17 @@
       "tools": {
         "git": "2.52.0",
         "gh": "2.83.2",
-        "intellijidea-community": "2025.3.1",
+        "intellijidea-community": "2025.3.1.1",
         "Gpg4win": "4.4.1",
         "github-desktop": "3.5.4",
         "SourceTree": "3.4.27",
         "make": "4.4.1",
-        "awscli": "2.32.28",
+        "awscli": "2.32.32",
         "azure-cli": "2.81.0",
         "terraform": "1.14.3",
         "opentofu": "1.11.2",
-        "SQLite": "3.51.1",
-        "dbeaver": "25.3.1",
+        "SQLite": "3.51.2",
+        "dbeaver": "25.3.2",
         "scala.portable": "2.11.4",
         "postman": "11.46.6",
         "meld": "3.22.2",
@@ -28,8 +28,8 @@
         "vscode": "1.107.1",
         "temurin17": "17.0.14.7",
         "openjdk": "25.0.0.1",
-        "gradle": "9.1.0",
-        "uv": "0.9.21"
+        "gradle": "9.2.1.1",
+        "uv": "0.9.24"
       }
     },
     "student": {
@@ -38,11 +38,11 @@
         "git": "2.52.0",
         "gh": "2.83.2",
         "make": "4.4.1",
-        "intellijidea-community": "2025.3.1",
+        "intellijidea-community": "2025.3.1.1",
         "openjdk": "25.0.0.1",
         "maven": "3.9.12",
         "nodejs": "24.12.0",
-        "uv": "0.9.21"
+        "uv": "0.9.24"
       }
     },
     "data_analyst": {
@@ -54,14 +54,14 @@
         "github-desktop": "3.5.4",
         "SourceTree": "3.4.27",
         "make": "4.4.1",
-        "R.Studio": "2025.9.2",
+        "R.Studio": "2026.1.0",
         "r": "4.4.2",
         "powerbi": "2.137.952.0",
         "tableau-public": "2025.2.2",
-        "SQLite": "3.51.1",
-        "dbeaver": "25.3.1",
+        "SQLite": "3.51.2",
+        "dbeaver": "25.3.2",
         "postman": "11.46.6",
-        "uv": "0.9.21"
+        "uv": "0.9.24"
       }
     },
     "data_scientist": {
@@ -73,13 +73,13 @@
         "github-desktop": "3.5.4",
         "SourceTree": "3.4.27",
         "make": "4.4.1",
-        "R.Studio": "2025.9.2",
+        "R.Studio": "2026.1.0",
         "r": "4.4.2",
-        "SQLite": "3.51.1",
-        "dbeaver": "25.3.1",
+        "SQLite": "3.51.2",
+        "dbeaver": "25.3.2",
         "postman": "11.46.6",
-        "cursoride": "2.2.44",
-        "uv": "0.9.21"
+        "cursoride": "2.3.34",
+        "uv": "0.9.24"
       }
     }
   },
