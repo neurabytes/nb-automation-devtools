@@ -29,7 +29,8 @@
         "git-credential-manager": "2.6.1",
         "pyenv": "2.6.20",
         "uv": "0.9.26",
-        "visual-studio-code": "1.108.1"
+        "visual-studio-code": "1.108.1",
+        "claude-code": "2.1.17"
       }
     },
     "student": {
@@ -43,7 +44,8 @@
         "maven": "3.9.12",
         "node": "25.3.0",
         "uv": "0.9.26",
-        "visual-studio-code": "1.108.1"
+        "visual-studio-code": "1.108.1",
+        "claude-code": "2.1.17"
       }
     },
     "data_analyst": {
@@ -60,7 +62,8 @@
         "tableau-public": "2025.3.1",
         "sqlite": "3.51.2",
         "dbeaver-community": "25.3.2",
-        "postman": "11.80.4"
+        "postman": "11.80.4",
+        "claude-code": "2.1.17"
       }
     },
     "data_scientist": {
@@ -79,7 +82,8 @@
         "cursor": "2.3.41,2ca326e0d1ce10956aea33d54c0e2d8c13c58a32",
         "git-credential-manager": "2.6.1",
         "pyenv": "2.6.20",
-        "uv": "0.9.26"
+        "uv": "0.9.26",
+        "claude-code": "2.1.17"
       }
     }
   },
