@@ -30,7 +30,8 @@
         "pyenv": "2.6.20",
         "uv": "0.9.26",
         "visual-studio-code": "1.108.2",
-        "claude-code": "2.1.19"
+        "claude-code": "2.1.19",
+        "sbt": "1.12.1"
       }
     },
     "student": {
@@ -45,7 +46,8 @@
         "node": "25.4.0",
         "uv": "0.9.26",
         "visual-studio-code": "1.108.2",
-        "claude-code": "2.1.19"
+        "claude-code": "2.1.19",
+        "sbt": "1.12.1"
       }
     },
     "data_analyst": {
@@ -83,7 +85,8 @@
         "git-credential-manager": "2.6.1",
         "pyenv": "2.6.20",
         "uv": "0.9.26",
-        "claude-code": "2.1.19"
+        "claude-code": "2.1.19",
+        "sbt": "1.12.1"
       }
     }
   },
