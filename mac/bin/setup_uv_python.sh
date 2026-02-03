@@ -39,7 +39,7 @@ ensure_homebrew_uv_or_exit() {
   if [ "${missing:-0}" -eq 1 ]; then
     echo ""
     echo "Please first run the following command:"
-    echo '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_dev_environment.sh)"'
+    echo '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_dev_environment.sh)"'
     echo ""
     echo "After installation, re-run this script."
     exit 1

@@ -16,7 +16,7 @@
         "opentofu": "1.11.4",
         "SQLite": "3.51.2",
         "dbeaver": "25.3.3",
-        "scala.portable": "2.11.4",
+        "scala": "3.8.1",
         "postman": "11.46.6",
         "meld": "3.22.2",
         "winscp": "6.5.5",
@@ -80,7 +80,7 @@
         "SQLite": "3.51.2",
         "dbeaver": "25.3.3",
         "postman": "11.46.6",
-        "cursoride": "2.3.42",
+        "cursoride": "2.4.22",
         "uv": "0.9.28",
         "sbt": "1.12.1"
       }

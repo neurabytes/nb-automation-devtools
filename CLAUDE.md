@@ -8,35 +8,47 @@ This is the Neurabytes Automation DevTools repository, containing cross-platform
 
 ## Architecture
 
-- `windows/bin/` - PowerShell scripts for Windows environment setup
-- `mac/bin/` - Shell scripts for macOS environment setup  
-- `tools.json` - Central configuration file defining tool versions for installation
-- Root-level scripts are referenced via GitHub raw URLs for direct execution
+- `windows/bin/` - PowerShell scripts for Windows environment setup (uses Chocolatey)
+- `mac/bin/` - Shell scripts for macOS environment setup (uses Homebrew)
+- `windows/bin/tools.json` - Tool versions for Windows (Chocolatey package names)
+- `mac/bin/tools.json` - Tool versions for macOS (Homebrew formula/cask names)
+- `.github/workflows/` - Automated tool version update workflow
 
 ## Key Components
 
 ### Tools Configuration
-- `tools.json` contains role-based tool definitions with versioned tools for each role
-- Supports roles: data_engineer, software_engineer, data_analyst, data_scientist
-- Scripts download this file dynamically from the GitHub repository  
+- Separate `tools.json` files for each platform with platform-specific package names
+- Supports roles: `data_engineer`, `student`, `data_analyst`, `data_scientist`
+- Scripts download tools.json dynamically from GitHub at runtime
 - The `ignore_checksum_tools` array lists tools that skip checksum validation
-- State management tracks installed tools in `C:\ProgramData\nb-automation\installed_tools_state.json`
+- State management tracks installed tools:
+  - Windows: `C:\ProgramData\nb-automation\installed_tools_state.json`
+  - macOS: `/Library/Application Support/nb-automation/installed_state.json`
 
 ### Setup Scripts (Windows)
 - `Setup-DevEnvironment.ps1` - Main script with role-based tool installation via Chocolatey
   - Presents role selection menu (1-4) for users to choose their development focus
   - Automatically detects and uninstalls tools removed from role configuration
   - Maintains state file to track nb-automation managed tools
-  - Supports install/uninstall operations with version-specific handling
-- `Setup-PyEnvWin.ps1` - Python version management setup for Windows
-- `Setup-DockerEnvironment.ps1` - Docker Desktop installation  
+- `Setup-PyEnvWin.ps1` - Python version management via pyenv-win (requires non-admin)
+- `Setup-UV-Python.ps1` - Alternative Python management via UV
+- `Setup-DockerEnvironment.ps1` - Docker Desktop installation (validates Hyper-V)
 - `Setup-GitGPG.ps1` - Git GPG signature configuration
 
 ### Setup Scripts (macOS)
-- `setup_dev_environment.sh` - Developer tools installation for macOS
-- `setup_pyenv.sh` - Python version management setup
-- `setup_docker_environment.sh` - Docker installation
+- `setup_dev_environment.sh` - Developer tools installation via Homebrew
+  - Supports `DRY_RUN` and `DEBUG` flags for testing
+  - Auto-taps `hashicorp/tap` for Terraform
+- `setup_pyenv.sh` - Python version management via pyenv
+- `setup_uv_python.sh` - Alternative Python management via UV
+- `setup_docker_environment.sh` - Docker Desktop installation via Homebrew Cask
 - `setup_git_gpg.sh` - Git GPG configuration
+
+### Automated Version Updates
+- `.github/workflows/update-tools.yml` - Weekly workflow (Sundays 8AM UTC) that:
+  - Runs `update_tools.py` to query Chocolatey API for Windows tool versions
+  - Runs `update_tools_macos.py` to query Homebrew for macOS tool versions
+  - Creates PR to `develop` branch with updated versions
 
 ## Development Commands
 
@@ -51,14 +63,15 @@ Set-ExecutionPolicy Bypass -Scope Process
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/ScriptName.ps1')
 ```
 
-```bash  
+```bash
 # macOS
-curl -s https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/script_name.sh | bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/script_name.sh)"
 ```
 
 ## Important Notes
 
-- Windows scripts require administrator privileges except for PyEnv setup
-- All scripts implement safety checks and can handle both installation and uninstallation
+- Windows scripts require administrator privileges except for PyEnv/UV setup
+- macOS pyenv/UV scripts require non-root execution
 - The main development branch is `develop`, not `main`
 - Scripts dynamically download `tools.json` to ensure latest tool versions
+- Homebrew tap-qualified packages (e.g., `hashicorp/tap/terraform`) are auto-tapped

@@ -80,7 +80,7 @@ ensure_state_dir() {
             debug "Would create state dir: $STATE_DIR (DRY RUN)"
         else
             sudo mkdir -p "$STATE_DIR"
-            sudo chmod 777 "$STATE_DIR"
+            sudo chmod 755 "$STATE_DIR"
         fi
     fi
 }
