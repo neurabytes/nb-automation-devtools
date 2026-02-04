@@ -3,7 +3,8 @@ import requests
 import os
 import xml.etree.ElementTree as ET
 
-CHOCOLATEY_API = "https://community.chocolatey.org/api/v2/Packages()?$filter=Id eq '{pkg}'&$orderby=Published desc"
+# Use IsLatestVersion filter to get the actual latest version, not just the most recently published
+CHOCOLATEY_API = "https://community.chocolatey.org/api/v2/Packages()?$filter=Id eq '{pkg}' and IsLatestVersion eq true"
 
 def latest_version(pkg_name: str) -> str | None:
     """Return latest version string for a Chocolatey package id, or None if not found."""

@@ -26,8 +26,6 @@
         "temurin17": "17.0.14.7",
         "openjdk": "25.0.2",
         "gradle": "9.3.1",
-        "git-credential-manager": "2.7.0",
-        "pyenv": "2.6.20",
         "uv": "0.9.28",
         "visual-studio-code": "1.108.2",
         "claude-code": "2.1.29",
@@ -82,8 +80,6 @@
         "dbeaver-community": "25.3.3",
         "postman": "11.82.6",
         "cursor": "2.4.22,618c607a249dd7fd2ffc662c6531143833bebd44",
-        "git-credential-manager": "2.7.0",
-        "pyenv": "2.6.20",
         "uv": "0.9.28",
         "claude-code": "2.1.29",
         "sbt": "1.12.1"

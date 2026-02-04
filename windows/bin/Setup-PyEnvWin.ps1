@@ -25,7 +25,10 @@ function Select-UserProfile {
 
     $selection = 0
     while ($selection -lt 1 -or $selection -gt $profiles.Length) {
-        $selection = Read-Host "Please select a user profile by number (1-$($profiles.Length))"
+        $input = Read-Host "Please select a user profile by number (1-$($profiles.Length))"
+        if ($input -match '^\d+$') {
+            $selection = [int]$input
+        }
     }
 
     return "C:\Users\" + $profiles[$selection-1]
@@ -95,8 +98,8 @@ function RemoveFromUserPath {
     # Split into individual paths
     $paths = $currentPath -split ';'
 
-    # Remove the path based on the ending substring
-    $newPath = ($paths | Where-Object { !$_.EndsWith($pathToRemove) }) -join ';'
+    # Remove the path using exact match (case-insensitive)
+    $newPath = ($paths | Where-Object { $_ -ne $pathToRemove }) -join ';'
 
     # Set the new PATH
     [System.Environment]::SetEnvironmentVariable('path', $newPath, "User")

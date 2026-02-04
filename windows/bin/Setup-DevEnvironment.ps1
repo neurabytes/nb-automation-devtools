@@ -80,7 +80,7 @@ function Get-ToolsAndRoleSelection {
     # Download tools.json if it does not exist
     if (-not (Test-Path -Path "tools.json")) {
         Write-Host "Downloading tools.json..."
-        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/tools.json' -OutFile 'tools.json'
+        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/tools.json' -OutFile 'tools.json'
     }
 
     # Read tools and ignore_checksum_tools from JSON file
@@ -95,10 +95,13 @@ function Get-ToolsAndRoleSelection {
         Write-Host "$($i + 1). $roleDescription" -ForegroundColor Black
     }
 
-    # Get user selection
+    # Get user selection with input validation
     do {
         $selection = Read-Host "Enter your choice (1-$($roleNames.Length))"
-        $selectedIndex = [int]$selection - 1
+        $selectedIndex = -1
+        if ($selection -match '^\d+$') {
+            $selectedIndex = [int]$selection - 1
+        }
     } while ($selectedIndex -lt 0 -or $selectedIndex -ge $roleNames.Length)
 
     $selectedRole = $roleNames[$selectedIndex]
