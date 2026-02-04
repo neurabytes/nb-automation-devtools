@@ -1,169 +1,147 @@
-# Neurabytes Automation for DevTools
-This repository contains automation to setup the development environment for the students. The goal is to provide an automated way to reduce the time it takes to setup the development environment.
+# Neurabytes Automation - Dev Tools
 
-### Features
-1. Cross-platform Compatibility: Works seamlessly across different operating systems and environments.
-2. Automation: Reduces manual setup and configuration, letting developers focus on what they do best: code.
-3. Adaptive: Regular updates and additions to ensure the tools remain relevant and efficient.
+**Zero-prerequisite, cross-platform developer environment setup with safe uninstall for personal laptops.**
 
+## The Problem
 
-## 1. Getting Started [Windows]
+You manage a team with short-term contributors (interns, contractors, students) who bring their **personal laptops**. You need to:
 
-### 1.1 Overview
-1. `Setup-DevEnvironment.ps1`: Ensures that Chocolatey is installed and then facilitates the installation, upgrade, or uninstallation of a predefined list of developer tools.
-2. `Setup-PyEnvWin.ps1`: Facilitates the installation or uninstallation of `pyenv-win` on Windows platforms.
-3. `Setup-DockerEnvironment.ps1`: Installs Docker Desktop for Windows using Chocolatey.
-4. `Setup-GitGPG.ps1`: Configures Git to sign commits and tags with GPG on Windows.
+1. Set up a consistent development environment quickly
+2. Not require them to install prerequisites first
+3. **Safely uninstall** when they leave - removing only what you installed, not breaking their existing setup
 
----
+## The Solution
 
-### 1.2 Prerequisites
-- Windows Operating System
-- PowerShell with administrative rights
+One command. No prerequisites. Safe uninstall.
 
----
+**macOS:**
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_dev_environment.sh)"
+```
 
-
-### 1.3 Install Development tools
-
-This script will install Chocolatey first and it will either install, upgrade, or uninstall a specified list of developer tools based on the versions provided in the script.
-
-**To Run the Script Directly from GitHub:**
-
+**Windows** (Run PowerShell as Administrator):
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/Setup-DevEnvironment.ps1')
 ```
 
----
+## Key Features
 
-### 1.4 Install Python
+| Feature | Description |
+|---------|-------------|
+| **Zero Prerequisites** | Just `curl` (macOS) or PowerShell (Windows). No Python, no package managers to install first. |
+| **Role-Based Installation** | Select a role (Data Engineer, Student, Data Analyst, Data Scientist) and get the right tools. |
+| **State Tracking** | Tracks what THIS script installed vs. what was already on the machine. |
+| **Safe Uninstall** | Removes only the tools we installed. Your existing setup stays intact. |
+| **Cross-Platform** | Single repository manages both Windows (Chocolatey) and macOS (Homebrew). |
+| **Automated Updates** | GitHub Actions automatically updates tool versions weekly. |
 
-#### Using pyenv-win
-This script installs python environment manager `pyenv-win` on Windows. This will also install pipenv and pre-commit.
 
-**To Run the Script Directly from GitHub:**
+## Why Not Just Use...?
 
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/Setup-PyEnvWin.ps1')
+| Alternative | Why It Doesn't Fit This Use Case |
+|-------------|----------------------------------|
+| **Ansible** | Requires Python + Ansible installed first. Not "zero prerequisites." |
+| **Brewfile** | `brew bundle cleanup` removes ALL packages not in file - dangerous on personal laptops. |
+| **Nix** | Steep learning curve. Overkill for short-term contributors. |
+| **Dev Containers** | Requires Docker. Changes workflow. Not everyone wants to develop inside a container. |
+| **Manual docs** | Gets outdated. Inconsistently followed. No safe uninstall path. |
+
+
+## How It Works
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  1. User runs one-liner command                                  │
+│  2. Script auto-installs package manager if missing              │
+│  3. User selects role (Data Engineer / Student / Analyst / etc.) │
+│  4. Tools for that role get installed                            │
+│  5. State saved: "These tools were installed by nb-automation"   │
+└──────────────────────────────────────────────────────────────────┘
+
+On uninstall → Script reads state → Removes ONLY those tools → User's existing setup untouched
 ```
 
-#### Using uv
-This script installs `uv` (Universal Version Manager) to manage Python versions on Windows.
+**State file locations:**
+- Windows: `C:\ProgramData\nb-automation\installed_tools_state.json`
+- macOS: `/Library/Application Support/nb-automation/`
 
-**To Run the Script Directly from GitHub:**
+## Available Roles
 
+| Role | Description | Example Tools |
+|------|-------------|---------------|
+| **Data Engineer** | Data pipelines, cloud platforms, infrastructure | AWS CLI, Terraform, Scala, Go |
+| **Student** | Essential tools for learning and productivity | Git, IntelliJ IDEA, Node.js, Maven |
+| **Data Analyst** | Data analysis and visualization | R, RStudio, Tableau, Power BI |
+| **Data Scientist** | Machine learning and research | R, RStudio, Cursor, Python tools |
+
+Tool configurations: [`windows/bin/tools.json`](windows/bin/tools.json) | [`mac/bin/tools.json`](mac/bin/tools.json)
+
+## Additional Scripts
+
+### Python Setup
+
+**Using uv (recommended):**
+```bash
+# macOS
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_uv_python.sh)"
+```
 ```powershell
+# Windows
 Set-ExecutionPolicy Bypass -Scope Process
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/Setup-UV-Python.ps1')
 ```
 
-
-
----
-
-### 1.5 Install Docker Desktop
-This script installs Docker Desktop for Windows using Chocolatey.
-
-**To Run the Script Directly from GitHub:**
-
+**Using pyenv:**
+```bash
+# macOS
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_pyenv.sh)"
+```
 ```powershell
+# Windows (Run as non-admin)
+Set-ExecutionPolicy Bypass -Scope Process
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/Setup-PyEnvWin.ps1')
+```
+
+### Docker Desktop
+
+```bash
+# macOS
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_docker_environment.sh)"
+```
+```powershell
+# Windows
 Set-ExecutionPolicy Bypass -Scope Process
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/Setup-DockerEnvironment.ps1')
 ```
 
----
+### Git GPG Signing
 
-### 1.6 Install Git sign commit
-This script configures Git to sign commits and tags with GPG on Windows. It automates the process of installing GPG and setting it up with Git for commit signature verification.
-
-**To Run the Script Directly from GitHub:**
-
+```bash
+# macOS
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_git_gpg.sh)"
+```
 ```powershell
+# Windows
 Set-ExecutionPolicy Bypass -Scope Process -Force
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/Setup-GitGPG.ps1')
 ```
----
 
-## 2. Getting Started [Mac]
+## Security Note
 
-### 2.1 Overview
-On macOS, setup is performed using Homebrew-based scripts that install and configure the core developer tools.
+These scripts execute directly from GitHub. Before running:
+1. Review the script source code
+2. Understand what will be installed
+3. Close elevated terminals after setup completes
 
-Scripts include:
+## Contributing
 
-- **setup_dev_environment.sh** – Installs or updates common developer tools via Homebrew
-- **setup_pyenv.sh** – Installs pyenv, Python, pipenv, and pre-commit
-- **setup_docker_environment.sh** – Installs Docker Desktop for Mac
-- **setup_git_gpg.sh** – Installs GPG, generates keys, and configures Git signing
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Submit a pull request to the `develop` branch
 
----
+**Adding a new tool:** Add to `windows/bin/tools.json` and/or `mac/bin/tools.json` with the correct package name for each platform.
 
-### 2.2 Prerequisites
-- macOS Ventura or later
-- Command Line Tools for Xcode (`xcode-select --install`)
-- Homebrew (auto-installed if missing)
+## License
 
----
-
-### 2.3 Install Development Tools
-
-This script ensures Homebrew is installed, then installs/updates developer tools defined in the script.
-
-**Run directly from GitHub:**
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_dev_environment.sh)"
-```
-
-### 2.4 Install Python
-
-#### 2.4.1 Using pyenv
-
-Installs `pyenv`, Python 3.11.x, `pipenv`, and `pre-commit`.
-
-**Run directly from GitHub:**
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_pyenv.sh)"
-```
-
-#### 2.4.2 Using uv
-
-Installs `uv` (Universal Version Manager) to manage Python versions.
-**Run directly from GitHub:**
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_uv_python.sh)"
-```
-
-
-
-### 2.5 Install Docker Desktop
-Installs Docker Desktop using Homebrew Cask.
-
-**Run directly from GitHub:**
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_docker_environment.sh)"
-```
-
-### 2.6 Configure Git Commit Signing (GPG)
-Installs GPG and configures Git to sign commits and tags.
-
-**Run directly from GitHub:**
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_git_gpg.sh)"
-```
-
-##  3. Security Note
-This script will request for Execution Policy Change for the session. Please make sure that you close the admin panel once the script is completed. Never execute scripts from untrusted sources on same session.
-
-
-## 4. Contribution
-If you have suggestions for improvements or bug fixes, feel free to submit a pull request or open an issue.
-
-
-
+[Apache 2.0](LICENSE)
