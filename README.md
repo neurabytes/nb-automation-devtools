@@ -32,7 +32,7 @@ This script will install Chocolatey first and it will either install, upgrade, o
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-DevEnvironment.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/Setup-DevEnvironment.ps1')
 ```
 
 ---
@@ -46,7 +46,7 @@ This script installs python environment manager `pyenv-win` on Windows. This wil
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-PyEnvWin.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/Setup-PyEnvWin.ps1')
 ```
 
 #### Using uv
@@ -56,7 +56,7 @@ This script installs `uv` (Universal Version Manager) to manage Python versions 
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-UV-Python.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/Setup-UV-Python.ps1')
 ```
 
 
@@ -70,7 +70,7 @@ This script installs Docker Desktop for Windows using Chocolatey.
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-DockerEnvironment.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/Setup-DockerEnvironment.ps1')
 ```
 
 ---
@@ -82,7 +82,7 @@ This script configures Git to sign commits and tags with GPG on Windows. It auto
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/Setup-GitGPG.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/Setup-GitGPG.ps1')
 ```
 ---
 
@@ -114,7 +114,7 @@ This script ensures Homebrew is installed, then installs/updates developer tools
 **Run directly from GitHub:**
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_dev_environment.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_dev_environment.sh)"
 ```
 
 ### 2.4 Install Python
@@ -126,7 +126,7 @@ Installs `pyenv`, Python 3.11.x, `pipenv`, and `pre-commit`.
 **Run directly from GitHub:**
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_pyenv.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_pyenv.sh)"
 ```
 
 #### 2.4.2 Using uv
@@ -135,7 +135,7 @@ Installs `uv` (Universal Version Manager) to manage Python versions.
 **Run directly from GitHub:**
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/ssetup_uv_python.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_uv_python.sh)"
 ```
 
 
@@ -146,7 +146,7 @@ Installs Docker Desktop using Homebrew Cask.
 **Run directly from GitHub:**
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_docker_environment.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_docker_environment.sh)"
 ```
 
 ### 2.6 Configure Git Commit Signing (GPG)
@@ -155,7 +155,7 @@ Installs GPG and configures Git to sign commits and tags.
 **Run directly from GitHub:**
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/setup_git_gpg.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/setup_git_gpg.sh)"
 ```
 
 ##  3. Security Note

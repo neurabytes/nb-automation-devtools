@@ -60,12 +60,12 @@ Scripts are designed to be executed directly from GitHub via:
 ```powershell
 # Windows
 Set-ExecutionPolicy Bypass -Scope Process
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/windows/bin/ScriptName.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/ScriptName.ps1')
 ```
 
 ```bash
 # macOS
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-local-setup/develop/mac/bin/script_name.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/mac/bin/script_name.sh)"
 ```
 
 ## Important Notes
