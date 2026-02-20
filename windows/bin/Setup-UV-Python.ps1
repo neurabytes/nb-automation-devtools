@@ -12,6 +12,9 @@ Prereq: uv is already installed and on PATH.
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+# Enforce TLS 1.2+ for all downloads in this script
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+
 # -------------------------
 # Config
 # -------------------------

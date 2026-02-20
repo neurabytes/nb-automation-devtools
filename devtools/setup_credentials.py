@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import getpass
 from collections import defaultdict
 from pathlib import Path
 from typing import DefaultDict, Dict, List, Sequence, Set, Tuple
@@ -45,7 +46,7 @@ def configure_gh_cli() -> None:
     )
 
     try:
-        token = input("Paste your GitHub token (leave empty to skip): ").strip()
+        token = getpass.getpass("Paste your GitHub token (leave empty to skip): ").strip()
     except EOFError:
         print("No input received. Skipping gh auth.")
         return

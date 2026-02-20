@@ -80,7 +80,7 @@ ensure_state_dir() {
             debug "Would create state dir: $STATE_DIR (DRY RUN)"
         else
             sudo mkdir -p "$STATE_DIR"
-            sudo chmod 755 "$STATE_DIR"
+            sudo chmod 750 "$STATE_DIR"
         fi
     fi
 }
@@ -106,13 +106,13 @@ save_current_state() {
         return
     fi
 
-    cat <<EOF | sudo tee "$STATE_FILE" >/dev/null
-{
-  "last_role": "$role",
-  "last_install_date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-  "installed_tools": $installed_tools_json
-}
-EOF
+    jq -n \
+        --arg role "$role" \
+        --arg date "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+        --argjson tools "$installed_tools_json" \
+        '{last_role: $role, last_install_date: $date, installed_tools: $tools}' \
+        | sudo tee "$STATE_FILE" >/dev/null
+    sudo chmod 640 "$STATE_FILE"
 
     echo "State saved to $STATE_FILE"
 }
@@ -128,6 +128,10 @@ ensure_brew_installed() {
             echo "(DRY RUN) /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
         else
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            if ! command -v brew >/dev/null 2>&1; then
+                echo "Error: Homebrew installation failed." >&2
+                exit 1
+            fi
         fi
     else
         echo "Homebrew is already installed."
@@ -143,8 +147,36 @@ load_tools_and_role() {
 
     if [[ ! -f "$TOOLS_JSON" ]]; then
         echo "Downloading tools.json..."
-        curl -s -o "$TOOLS_JSON" \
-            https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/refs/heads/develop/mac/bin/tools.json
+        if ! curl -fsSL -o "$TOOLS_JSON" \
+            https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/refs/heads/develop/mac/bin/tools.json; then
+            echo "Error: Failed to download tools.json. Aborting." >&2
+            exit 1
+        fi
+
+        # Verify SHA-256 checksum
+        echo "Verifying tools.json checksum..."
+        HASH_URL="https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/refs/heads/develop/mac/bin/tools.json.sha256"
+        EXPECTED_HASH=$(curl -fsSL "$HASH_URL" 2>/dev/null | awk '{print $1}')
+        if [[ -n "$EXPECTED_HASH" ]]; then
+            ACTUAL_HASH=$(shasum -a 256 "$TOOLS_JSON" | awk '{print $1}')
+            if [[ "$ACTUAL_HASH" != "$EXPECTED_HASH" ]]; then
+                echo "Error: Checksum mismatch for tools.json!" >&2
+                echo "  Expected: $EXPECTED_HASH" >&2
+                echo "  Got:      $ACTUAL_HASH" >&2
+                echo "File may have been tampered with. Aborting." >&2
+                rm -f "$TOOLS_JSON"
+                exit 1
+            fi
+            echo "Checksum verified."
+        else
+            echo "Warning: Could not download checksum file. Skipping verification." >&2
+        fi
+    fi
+
+    # Validate JSON schema
+    if ! jq -e '.roles | type == "object"' "$TOOLS_JSON" >/dev/null 2>&1; then
+        echo "Error: Invalid tools.json — missing or malformed 'roles' key." >&2
+        exit 1
     fi
 
     ROLE_KEYS=()

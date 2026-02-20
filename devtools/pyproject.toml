@@ -1,0 +1,7 @@
+[project]
+name = "nb-automation-devtools"
+version = "0.1.0"
+description = "Neurabytes developer environment setup and credential configuration utilities"
+
+requires-python = ">=3.11"
+dependencies = []

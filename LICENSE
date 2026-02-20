@@ -1,6 +1,6 @@
 MIT License (Modified)
 
-Copyright (c) 2023 Neurabytes Private Limited
+Copyright (c) 2023-2026 Neurabytes Private Limited and NEURABYTES CANADA INC.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,3 +22,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+ADDITIONAL DISCLAIMER
+
+This Software includes scripts that may execute with elevated privileges
+(administrator or root access), install or remove third-party software
+packages, modify system environment variables, and handle authentication
+credentials. The authors and copyright holders accept no responsibility for:
+
+- Any damage, data loss, or system instability caused by running these scripts;
+- The security, integrity, or behavior of third-party software installed by
+  these scripts (including but not limited to packages from Chocolatey,
+  Homebrew, or any other package registry);
+- Any compromise of credentials or tokens entered during script execution;
+- Any unintended changes to system configuration, PATH, or environment.
+
+Users are solely responsible for reviewing scripts before execution, verifying
+the suitability of installed software for their environment, and maintaining
+backups of their systems. Use of this Software in production or enterprise
+environments is at the user's own risk.

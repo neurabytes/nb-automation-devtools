@@ -51,6 +51,11 @@ jobs:
       - name: Update macOS tools.json
         run: python .github/workflows/update_tools_macos.py
 
+      - name: Regenerate tools.json checksums
+        run: |
+          sha256sum windows/bin/tools.json | sed 's|windows/bin/||' > windows/bin/tools.json.sha256
+          sha256sum mac/bin/tools.json | sed 's|mac/bin/||' > mac/bin/tools.json.sha256
+
       - name: Set branch name
         id: branch_name
         run: echo "BRANCH_NAME=automation/feature/$(date +'%m_%Y')_tools_version_update" >> $GITHUB_ENV

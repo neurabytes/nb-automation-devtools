@@ -1,3 +1,6 @@
+# Enforce TLS 1.2+ for all downloads in this script
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+
 # Function to check if running as an administrator
 function Test-IsAdmin {
     $admin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
@@ -55,13 +58,21 @@ function CloneOrUpdatePyEnv {
             Write-Host "Removing existing directory..."
             Remove-Item -Path $pyenvPath -Recurse -Force
             Write-Host "Cloning pyenv-win to $pyenvPath..."
-            git clone https://github.com/pyenv-win/pyenv-win.git $pyenvPath
+            $cloneOutput = git clone https://github.com/pyenv-win/pyenv-win.git $pyenvPath 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "Error: Failed to clone pyenv-win repository: $cloneOutput" -ForegroundColor Red
+                return
+            }
         } else {
             Write-Host "Skipped cloning pyenv-win since directory already exists and overwrite was not chosen."
         }
     } else {
         Write-Host "Cloning pyenv-win to $pyenvPath..."
-        git clone https://github.com/pyenv-win/pyenv-win.git $pyenvPath
+        $cloneOutput = git clone https://github.com/pyenv-win/pyenv-win.git $pyenvPath 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Error: Failed to clone pyenv-win repository: $cloneOutput" -ForegroundColor Red
+            return
+        }
     }
 }
 
@@ -117,7 +128,7 @@ function Invoke-SetupCredentials {
     }
 
     $url = "https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/devtools/setup_credentials.py"
-    $tmpFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "nb_setup_credentials.py")
+    $tmpFile = Join-Path $env:TEMP ("nb_setup_credentials_{0}.py" -f ([Guid]::NewGuid().ToString("N")))
 
     try {
         Write-Host "Downloading credentials setup script from $url ..."

@@ -102,6 +102,7 @@ optional_setup_credentials() {
   case "$ANSWER" in
     yes|y|Y)
       echo "Downloading credentials setup script..."
+      umask 077
       TMP_FILE="$(mktemp -t nb_setup_credentials.XXXXXX.py)"
 
       if curl -fsSL "$CREDENTIALS_URL" -o "$TMP_FILE"; then

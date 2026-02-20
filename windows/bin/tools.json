@@ -109,5 +109,6 @@
   },
   "ignore_checksum_tools": [
     "powerbi"
-  ]
+  ],
+  "_ignore_checksum_reason": "powerbi: Chocolatey package does not publish a stable checksum; verification is skipped to avoid install failures"
 }

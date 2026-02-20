@@ -21,6 +21,13 @@ function Get-StateFilePath {
     $stateDir = "C:\ProgramData\nb-automation"
     if (-not (Test-Path $stateDir)) {
         New-Item -ItemType Directory -Path $stateDir -Force | Out-Null
+        # Restrict access to Administrators only
+        $acl = Get-Acl $stateDir
+        $acl.SetAccessRuleProtection($true, $false)
+        $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+            "BUILTIN\Administrators", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+        $acl.AddAccessRule($adminRule)
+        Set-Acl -Path $stateDir -AclObject $acl
     }
     return Join-Path $stateDir "installed_tools_state.json"
 }
@@ -72,19 +79,58 @@ function Ensure-ChocolateyInstalled {
         Write-Host "Installing Chocolatey..."
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-        iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+        $chocoInstaller = Join-Path $env:TEMP "chocolatey_install.ps1"
+        try {
+            Invoke-WebRequest -Uri 'https://chocolatey.org/install.ps1' -OutFile $chocoInstaller -UseBasicParsing -ErrorAction Stop
+            & $chocoInstaller
+        } catch {
+            Write-Host "Error: Failed to download or run Chocolatey installer: $_" -ForegroundColor DarkRed
+            throw
+        } finally {
+            if (Test-Path $chocoInstaller) { Remove-Item $chocoInstaller -Force }
+        }
     }
 }
 
 function Get-ToolsAndRoleSelection {
+    $toolsJsonUrl = 'https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/tools.json'
+    $toolsJsonHashUrl = 'https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/tools.json.sha256'
+
     # Download tools.json if it does not exist
     if (-not (Test-Path -Path "tools.json")) {
         Write-Host "Downloading tools.json..."
-        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/neurabytes/nb-automation-devtools/develop/windows/bin/tools.json' -OutFile 'tools.json'
+        try {
+            Invoke-WebRequest -Uri $toolsJsonUrl -OutFile 'tools.json' -UseBasicParsing -ErrorAction Stop
+        } catch {
+            Write-Host "Error: Failed to download tools.json: $_" -ForegroundColor DarkRed
+            throw
+        }
+
+        # Verify SHA-256 checksum
+        Write-Host "Verifying tools.json checksum..."
+        try {
+            $expectedHash = (Invoke-WebRequest -Uri $toolsJsonHashUrl -UseBasicParsing -ErrorAction Stop).Content.Trim().Split(' ')[0]
+            $actualHash = (Get-FileHash -Path 'tools.json' -Algorithm SHA256).Hash.ToLower()
+            if ($actualHash -ne $expectedHash) {
+                Remove-Item -Path 'tools.json' -Force
+                throw "Checksum mismatch for tools.json! Expected: $expectedHash, Got: $actualHash. File may have been tampered with."
+            }
+            Write-Host "Checksum verified." -ForegroundColor DarkGreen
+        } catch [System.Net.WebException] {
+            Write-Host "Warning: Could not download checksum file. Skipping verification." -ForegroundColor DarkYellow
+        }
     }
 
     # Read tools and ignore_checksum_tools from JSON file
     $jsonData = Get-Content -Raw -Path "tools.json" | ConvertFrom-Json
+
+    # Validate JSON schema
+    if (-not $jsonData.roles) {
+        throw "Invalid tools.json: missing 'roles' key."
+    }
+    if (-not $jsonData.PSObject.Properties['ignore_checksum_tools']) {
+        throw "Invalid tools.json: missing 'ignore_checksum_tools' key."
+    }
 
     # Display role selection menu
     Write-Host "Please select your role:" -ForegroundColor Black
@@ -319,6 +365,9 @@ function Report-ToolStatus {
     }
 }
 
+
+# Enforce TLS 1.2+ for all downloads in this script
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
 # Main script
 # This is to ensure that the tools.json file is not left behind after the script has completed
