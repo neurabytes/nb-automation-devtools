@@ -176,7 +176,14 @@ load_tools_and_role() {
 
     INDEX=$((SEL-1))
     SELECTED_ROLE="${ROLE_KEYS[INDEX]}"
-    TOOLS_JSON_DATA=$(jq -c ".roles[\"$SELECTED_ROLE\"].tools" "$TOOLS_JSON")
+
+    if [[ "$SELECTED_ROLE" == "platform_engineer" ]]; then
+        # Merge tools from all other roles into a single superset
+        TOOLS_JSON_DATA=$(jq -c '[.roles | to_entries[] | select(.key != "platform_engineer") | .value.tools] | add' "$TOOLS_JSON")
+        debug "Merged tools from all roles for platform_engineer"
+    else
+        TOOLS_JSON_DATA=$(jq -c ".roles[\"$SELECTED_ROLE\"].tools" "$TOOLS_JSON")
+    fi
 
     debug "Selected role key: $SELECTED_ROLE"
     debug "Tools JSON for role: $TOOLS_JSON_DATA"

@@ -1,5 +1,9 @@
 {
   "roles": {
+    "platform_engineer": {
+      "description": "Platform Engineer - All tools from all roles (superset)",
+      "tools": {}
+    },
     "data_engineer": {
       "description": "Data Engineer - Tools for data pipeline development, cloud platforms, and data processing",
       "tools": {

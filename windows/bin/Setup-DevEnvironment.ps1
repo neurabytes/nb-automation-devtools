@@ -109,8 +109,18 @@ function Get-ToolsAndRoleSelection {
 
     # Get tools for selected role
     $tools = @{}
-    foreach ($key in $jsonData.roles.$selectedRole.tools.PSObject.Properties.Name) {
-        $tools[$key] = $jsonData.roles.$selectedRole.tools.$key
+    if ($selectedRole -eq "platform_engineer") {
+        # Merge tools from all other roles into a single superset
+        foreach ($roleName in $roleNames) {
+            if ($roleName -eq "platform_engineer") { continue }
+            foreach ($key in $jsonData.roles.$roleName.tools.PSObject.Properties.Name) {
+                $tools[$key] = $jsonData.roles.$roleName.tools.$key
+            }
+        }
+    } else {
+        foreach ($key in $jsonData.roles.$selectedRole.tools.PSObject.Properties.Name) {
+            $tools[$key] = $jsonData.roles.$selectedRole.tools.$key
+        }
     }
 
     $ignore_checksum_tools = $jsonData.ignore_checksum_tools
