@@ -35,7 +35,10 @@
         "gradle": "9.3.1",
         "uv": "0.10.2",
         "claude-code": "2.1.39",
-        "sbt": "1.12.2"
+        "sbt": "1.12.2",
+        "zoom": "6.6.11.23272",
+        "microsoft-teams-new-bootstrapper": "1.0.2508703",
+        "microsoft-edge": "145.0.3800.65"
       }
     },
     "student": {
@@ -51,7 +54,10 @@
         "uv": "0.10.2",
         "vscode": "1.109.2",
         "claude-code": "2.1.39",
-        "sbt": "1.12.2"
+        "sbt": "1.12.2",
+        "zoom": "6.6.11.23272",
+        "microsoft-teams-new-bootstrapper": "1.0.2508703",
+        "microsoft-edge": "145.0.3800.65"
       }
     },
     "data_analyst": {
@@ -71,7 +77,10 @@
         "dbeaver": "25.3.4",
         "postman": "11.46.6",
         "uv": "0.10.2",
-        "claude-code": "2.1.39"
+        "claude-code": "2.1.39",
+        "zoom": "6.6.11.23272",
+        "microsoft-teams-new-bootstrapper": "1.0.2508703",
+        "microsoft-edge": "145.0.3800.65"
       }
     },
     "data_scientist": {
@@ -91,7 +100,10 @@
         "cursoride": "2.4.36",
         "uv": "0.10.2",
         "claude-code": "2.1.39",
-        "sbt": "1.12.2"
+        "sbt": "1.12.2",
+        "zoom": "6.6.11.23272",
+        "microsoft-teams-new-bootstrapper": "1.0.2508703",
+        "microsoft-edge": "145.0.3800.65"
       }
     }
   },
