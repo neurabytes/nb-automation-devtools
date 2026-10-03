@@ -7,21 +7,21 @@
     "data_engineer": {
       "description": "Data Engineer - Tools for data pipeline development, cloud platforms, and data processing",
       "tools": {
-        "git": "2.55.0.5",
-        "gh": "2.101.0",
+        "git": "2.56.0",
+        "gh": "2.102.0",
         "intellijidea-community": "2026.2.3",
         "Gpg4win": "5.1.1",
         "github-desktop": "3.6.6",
         "SourceTree": "3.4.30",
         "make": "4.4.1",
-        "awscli": "2.37.3",
+        "awscli": "2.37.6",
         "azure-cli": "2.90.0",
         "terraform": "1.15.2",
         "opentofu": "1.12.6",
         "SQLite": "3.53.4",
         "dbeaver": "26.2.1",
         "scala": "3.9.0",
-        "postman": "12.29.4",
+        "postman": "12.30.4",
         "meld": "3.22.2",
         "winscp": "6.5.7",
         "maven": "3.9.16",
@@ -29,42 +29,42 @@
         "go": "1.27.1",
         "act-cli": "0.2.89",
         "lm-studio": "0.3.29",
-        "vscode": "1.139.1",
+        "vscode": "1.140.0",
         "temurin17": "17.0.14.7",
         "openjdk": "26.0.2.2",
         "gradle": "9.8.0",
-        "uv": "0.12.19",
-        "claude-code": "2.1.274",
+        "uv": "0.12.21",
+        "claude-code": "2.1.285",
         "sbt": "2.0.9",
         "zoom": "7.2.1.48556",
         "microsoft-teams-new-bootstrapper": "1.0.2508703",
-        "microsoft-edge": "153.0.4234.48"
+        "microsoft-edge": "154.0.4258.48"
       }
     },
     "student": {
       "description": "Student - Essential tools for students and general productivity",
       "tools": {
-        "git": "2.55.0.5",
-        "gh": "2.101.0",
+        "git": "2.56.0",
+        "gh": "2.102.0",
         "make": "4.4.1",
         "intellijidea-community": "2026.2.3",
         "openjdk": "26.0.2.2",
         "maven": "3.9.16",
         "nodejs": "26.10.0",
-        "uv": "0.12.19",
-        "vscode": "1.139.1",
-        "claude-code": "2.1.274",
+        "uv": "0.12.21",
+        "vscode": "1.140.0",
+        "claude-code": "2.1.285",
         "sbt": "2.0.9",
         "zoom": "7.2.1.48556",
         "microsoft-teams-new-bootstrapper": "1.0.2508703",
-        "microsoft-edge": "153.0.4234.48"
+        "microsoft-edge": "154.0.4258.48"
       }
     },
     "data_analyst": {
       "description": "Data Analyst - Tools for data analysis, visualization, and statistical computing",
       "tools": {
-        "git": "2.55.0.5",
-        "gh": "2.101.0",
+        "git": "2.56.0",
+        "gh": "2.102.0",
         "Gpg4win": "5.1.1",
         "github-desktop": "3.6.6",
         "SourceTree": "3.4.30",
@@ -75,19 +75,19 @@
         "tableau-public": "2026.1.0",
         "SQLite": "3.53.4",
         "dbeaver": "26.2.1",
-        "postman": "12.29.4",
-        "uv": "0.12.19",
-        "claude-code": "2.1.274",
+        "postman": "12.30.4",
+        "uv": "0.12.21",
+        "claude-code": "2.1.285",
         "zoom": "7.2.1.48556",
         "microsoft-teams-new-bootstrapper": "1.0.2508703",
-        "microsoft-edge": "153.0.4234.48"
+        "microsoft-edge": "154.0.4258.48"
       }
     },
     "data_scientist": {
       "description": "Data Scientist - Tools for machine learning, statistical analysis, and research",
       "tools": {
-        "git": "2.55.0.5",
-        "gh": "2.101.0",
+        "git": "2.56.0",
+        "gh": "2.102.0",
         "Gpg4win": "5.1.1",
         "github-desktop": "3.6.6",
         "SourceTree": "3.4.30",
@@ -96,14 +96,14 @@
         "r": "4.4.2",
         "SQLite": "3.53.4",
         "dbeaver": "26.2.1",
-        "postman": "12.29.4",
-        "cursoride": "3.22.7",
-        "uv": "0.12.19",
-        "claude-code": "2.1.274",
+        "postman": "12.30.4",
+        "cursoride": "3.22.12",
+        "uv": "0.12.21",
+        "claude-code": "2.1.285",
         "sbt": "2.0.9",
         "zoom": "7.2.1.48556",
         "microsoft-teams-new-bootstrapper": "1.0.2508703",
-        "microsoft-edge": "153.0.4234.48"
+        "microsoft-edge": "154.0.4258.48"
       }
     }
   },
